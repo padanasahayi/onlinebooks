@@ -161,18 +161,18 @@
 
             <div id="translationSettingsPanel" class="p-4 space-y-3">
                 <div>
-                    <label class="text-xs font-bold text-slate-600">AI API URL</label>
-                    <input id="aiApiUrl" type="text" value="https://api.openai.com/v1/responses"
+                    <label class="text-xs font-bold text-slate-600">Gemini API URL</label>
+                    <input id="aiApiUrl" type="text" value="https://generativelanguage.googleapis.com/v1beta"
                            class="mt-1 w-full border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-300">
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-600">API Key</label>
-                    <input id="aiApiKey" type="password" placeholder="sk-..."
+                    <input id="aiApiKey" type="password" placeholder="AIza..."
                            class="mt-1 w-full border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-300">
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-slate-600">AI Model</label>
-                    <input id="aiModel" type="text" value="gpt-5.6-luna"
+                    <label class="text-xs font-bold text-slate-600">Gemini Model</label>
+                    <input id="aiModel" type="text" value="gemini-3.8-flash"
                            class="mt-1 w-full border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-300">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
@@ -313,222 +313,55 @@ const NO_COVER = 'data:image/svg+xml;utf8,' + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="140"><rect width="100" height="140" fill="#e2e8f0"/>' +
     '<text x="50" y="76" font-size="12" text-anchor="middle" fill="#94a3b8" font-family="sans-serif">No Cover</text></svg>');
 
-const bookMeta = {};      // bookId -> { ia:[], access:'public'|..., gutId, formats }
+const bookMeta = {};      // bookId -> { ia:[], access:'public'|... }
 let searchSeq = 0;
 let searchCtrl = null;
-
-function hasPlainText(formats) {
-    if (!formats) return false;
-    return !!(formats['text/plain; charset=utf-8'] || formats['text/plain; charset=us-ascii'] || formats['text/plain'] ||
-        formats['text/html; charset=utf-8'] || formats['text/html']);
-}
-
-function gutCover(book) {
-    if (book.formats) {
-        const img = book.formats['image/jpeg'];
-        if (img) return img;
-    }
-    if (book.id) return 'https://www.gutenberg.org/cache/epub/' + book.id + '/pg' + book.id + '.cover.medium.jpg';
-    return NO_COVER;
-}
-
-function rankBadge(rank) {
-    if (rank <= 3) return '<span class="text-[10px] font-black text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md">#' + rank + '</span>';
-    return '<span class="text-[10px] font-bold text-slate-400 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded-md">#' + rank + '</span>';
-}
-
-function renderBookCard(item, rank) {
-    const title = item.title || 'Unknown';
-    const author = item.author || 'Unknown';
-    const bookId = item.id;
-    bookMeta[bookId] = item.meta || {};
-    const cover = item.cover || NO_COVER;
-    const badges = [];
-    if (item.freeDownload) {
-        badges.push('<span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold">✓ Free TXT</span>');
-    }
-    if (item.hasEpub) {
-        badges.push('<span class="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full font-bold">EPUB</span>');
-    }
-    if (item.borrowOnly) {
-        badges.push('<span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full font-bold">Borrow</span>');
-    }
-    if (item.downloads) {
-        badges.push('<span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full font-bold">' +
-            (item.downloads > 999 ? (item.downloads / 1000).toFixed(1) + 'k' : item.downloads) + ' ↓</span>');
-    }
-    if (item.year) {
-        badges.push('<span class="text-[10px] text-slate-400">' + item.year + '</span>');
-    }
-    const sourceLabel = item.source === 'gutenberg'
-        ? '<span class="text-[10px] text-emerald-600 font-semibold">Project Gutenberg</span>'
-        : (item.source === 'openlibrary'
-            ? '<span class="text-[10px] text-slate-400">Open Library</span>'
-            : '');
-
-    const btnClass = item.freeDownload
-        ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-        : 'bg-slate-200 text-slate-600 hover:bg-slate-300';
-    const btnLabel = item.freeDownload
-        ? '<i class="fa-solid fa-bolt text-amber-300"></i> ഡൗൺലോഡ്'
-        : '<i class="fa-solid fa-cloud-arrow-down"></i> ശ്രമിക്കുക';
-
-    return '<div class="bg-white p-3 rounded-2xl shadow-sm border ' +
-        (item.freeDownload ? 'border-emerald-200' : 'border-slate-200') + ' flex gap-3 items-start">' +
-        '<div class="relative shrink-0">' +
-        '<img src="' + cover + '" loading="lazy" onerror="this.onerror=null;this.src=\'' + NO_COVER + '\'" class="w-16 h-[5.5rem] object-cover rounded-xl bg-slate-100">' +
-        '<div class="absolute -top-1.5 -left-1.5">' + rankBadge(rank) + '</div></div>' +
-        '<div class="flex-1 min-w-0">' +
-        '<h3 class="font-bold text-slate-800 text-sm leading-snug line-clamp-2">' + escapeHtml(title) + '</h3>' +
-        '<p class="text-xs text-slate-500 truncate mt-0.5">' + escapeHtml(author) + '</p>' +
-        '<div class="flex flex-wrap gap-1 mt-1.5">' + badges.join('') + '</div>' +
-        '<div class="mt-1">' + sourceLabel + '</div>' +
-        '<div class="mt-2 flex gap-2">' +
-        '<button onclick="startStreamDownload(\'' + bookId + '\',\'' + enc(title) + '\',\'' + enc(author) + '\')" class="' + btnClass + ' px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1">' +
-        btnLabel + '</button>' +
-        (item.previewUrl
-            ? '<a href="' + escapeHtml(item.previewUrl) + '" target="_blank" rel="noopener" class="bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-xl text-xs font-bold">Preview ↗</a>'
-            : '') +
-        '</div></div></div>';
-}
-
-async function searchGutendex(query, signal) {
-    try {
-        const data = await fetchJSON('https://gutendex.com/books/?search=' + encodeURIComponent(query), signal);
-        const results = (data && data.results) || [];
-        return results.map(function (b) {
-            const formats = b.formats || {};
-            const free = hasPlainText(formats);
-            const authors = (b.authors || []).map(function (a) { return a.name; }).filter(Boolean);
-            const author = authors[0] || 'Unknown Author';
-            const id = 'pg_' + b.id;
-            return {
-                id: id,
-                title: b.title || 'Unknown',
-                author: author,
-                cover: gutCover(b),
-                freeDownload: free,
-                hasEpub: !!(formats['application/epub+zip']),
-                borrowOnly: false,
-                downloads: b.download_count || 0,
-                year: '',
-                source: 'gutenberg',
-                score: (free ? 1000000 : 0) + (b.download_count || 0),
-                previewUrl: 'https://www.gutenberg.org/ebooks/' + b.id,
-                meta: { gutId: b.id, formats: formats, access: free ? 'public' : '', ia: [] }
-            };
-        }).filter(function (x) { return x.freeDownload; }); // only books with actual text/html to download
-    } catch (e) {
-        if (e && e.name === 'AbortError') throw e;
-        console.warn('Gutendex search failed', e);
-        return [];
-    }
-}
-
-async function searchOpenLibrary(query, signal) {
-    try {
-        const data = await fetchJSON(
-            'https://openlibrary.org/search.json?q=' + encodeURIComponent(query) +
-            '&limit=24&fields=key,title,author_name,cover_i,ebook_access,ia,first_publish_year,edition_count,ratings_average,already_read_count',
-            signal
-        );
-        const docs = (data && data.docs) || [];
-        return docs.map(function (book, idx) {
-            const bookId = book.key
-                ? String(book.key).replace('/works/', '').replace(/[^A-Za-z0-9_\-]/g, '')
-                : ('ol_' + Date.now() + '_' + idx);
-            const free = book.ebook_access === 'public';
-            const title = book.title || 'Unknown Title';
-            const author = book.author_name ? book.author_name[0] : 'Unknown Author';
-            const ratings = book.ratings_average || 0;
-            const reads = book.already_read_count || 0;
-            return {
-                id: bookId,
-                title: title,
-                author: author,
-                cover: book.cover_i ? 'https://covers.openlibrary.org/b/id/' + book.cover_i + '-M.jpg' : NO_COVER,
-                freeDownload: free,
-                hasEpub: free,
-                borrowOnly: !free && (book.ebook_access === 'borrowable' || (book.ia && book.ia.length)),
-                downloads: Math.round(reads || 0),
-                year: book.first_publish_year || '',
-                source: 'openlibrary',
-                // free first, then ratings/popularity, keep original relevance order as tie-break
-                score: (free ? 500000 : 0) + (ratings * 1000) + Math.min(reads, 50000) + (24 - idx),
-                previewUrl: book.key ? 'https://openlibrary.org' + book.key : '',
-                meta: { ia: book.ia || [], access: book.ebook_access || '', year: book.first_publish_year || '' }
-            };
-        });
-    } catch (e) {
-        if (e && e.name === 'AbortError') throw e;
-        console.warn('Open Library search failed', e);
-        return [];
-    }
-}
-
-function dedupeBooks(list) {
-    const seen = new Set();
-    const out = [];
-    list.forEach(function (b) {
-        const key = normText(b.title).slice(0, 48) + '|' + normText(b.author).split(' ').slice(-1)[0];
-        if (seen.has(key)) return;
-        seen.add(key);
-        out.push(b);
-    });
-    return out;
-}
 
 async function triggerSearch() {
     const query = document.getElementById('searchInput').value.trim();
     if (!query) return;
     const container = document.getElementById('searchResults');
-    container.innerHTML =
-        '<div class="text-center py-8 text-slate-400">' +
-        '<i class="fa-solid fa-spinner animate-spin text-2xl mb-2"></i>' +
-        '<p class="text-xs">Cloud / online ebooks തിരയുന്നു...</p>' +
-        '<p class="text-[10px] mt-1 text-slate-300">Gutenberg + Open Library · free first</p></div>';
+    container.innerHTML = '<div class="text-center py-8 text-slate-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2"></i><p class="text-xs">പുസ്തകങ്ങൾ തിരയുന്നു...</p></div>';
 
     const seq = ++searchSeq;
     if (searchCtrl) { try { searchCtrl.abort(); } catch (e) {} }
     searchCtrl = new AbortController();
-    const signal = searchCtrl.signal;
 
     try {
-        // Parallel: Gutenberg (best for full free text) + Open Library (broader catalog)
-        const pair = await Promise.all([
-            searchGutendex(query, signal),
-            searchOpenLibrary(query, signal)
-        ]);
+        const data = await fetchJSON('https://openlibrary.org/search.json?q=' + encodeURIComponent(query) + '&limit=20', searchCtrl.signal);
         if (seq !== searchSeq) return;
-
-        let gut = pair[0] || [];
-        let ol = pair[1] || [];
-
-        // Prefer Gutenberg free books; fill with OL free, then OL borrowable
-        const freeOl = ol.filter(function (x) { return x.freeDownload; });
-        const otherOl = ol.filter(function (x) { return !x.freeDownload; });
-
-        let merged = dedupeBooks(gut.concat(freeOl).concat(otherOl));
-        merged.sort(function (a, b) { return b.score - a.score; });
-        merged = merged.slice(0, 20);
-
-        if (merged.length === 0) {
+        let docs = (data && data.docs) || [];
+        if (docs.length === 0) {
             container.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs">പുസ്തകങ്ങളൊന്നും കണ്ടെത്താനായില്ല</div>';
             return;
         }
+        // free-to-read books first (those are the ones that will actually download)
+        docs = docs.map(function (d, i) { return { d: d, i: i }; })
+            .sort(function (a, b) {
+                return ((b.d.ebook_access === 'public') - (a.d.ebook_access === 'public')) || (a.i - b.i);
+            })
+            .map(function (x) { return x.d; });
 
-        const freeCount = merged.filter(function (x) { return x.freeDownload; }).length;
-        const header =
-            '<div class="flex items-center justify-between text-[11px] text-slate-500 px-0.5 pb-1">' +
-            '<span><b class="text-slate-700">' + merged.length + '</b> results · ranked</span>' +
-            '<span class="text-emerald-600 font-bold">' + freeCount + ' free downloadable</span></div>';
-
-        container.innerHTML = header + merged.map(function (item, i) {
-            return renderBookCard(item, i + 1);
+        container.innerHTML = docs.map(function (book, idx) {
+            const bookId = book.key ? String(book.key).replace('/works/', '').replace(/[^A-Za-z0-9_\-]/g, '') : ('bk_' + Date.now() + '_' + idx);
+            const title = book.title || 'Unknown Title';
+            const author = book.author_name ? book.author_name[0] : 'Unknown Author';
+            bookMeta[bookId] = { ia: book.ia || [], access: book.ebook_access || '', year: book.first_publish_year || '' };
+            const cover = book.cover_i ? 'https://covers.openlibrary.org/b/id/' + book.cover_i + '-M.jpg' : NO_COVER;
+            const free = book.ebook_access === 'public'
+                ? '<span class="ml-1 text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold">സൗജന്യം</span>' : '';
+            return '<div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex gap-3 items-center">' +
+                '<img src="' + cover + '" loading="lazy" onerror="this.onerror=null;this.src=NO_COVER" class="w-16 h-20 object-cover rounded-xl shrink-0 bg-slate-100">' +
+                '<div class="flex-1 min-w-0">' +
+                '<h3 class="font-bold text-slate-800 text-sm truncate">' + escapeHtml(title) + free + '</h3>' +
+                '<p class="text-xs text-slate-500 truncate">' + escapeHtml(author) + '</p>' +
+                '<div class="mt-2 flex gap-2">' +
+                '<button onclick="startStreamDownload(\'' + bookId + '\',\'' + enc(title) + '\',\'' + enc(author) + '\')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1">' +
+                '<i class="fa-solid fa-cloud-arrow-down"></i> ഡൗൺലോഡ്</button>' +
+                '</div></div></div>';
         }).join('');
     } catch (err) {
         if (seq !== searchSeq || (err && err.name === 'AbortError')) return;
-        console.error(err);
         container.innerHTML = '<div class="text-center py-8 text-red-500 text-xs">തിരയലിൽ പിശക് സംഭവിച്ചു. ഇന്റർനെറ്റ് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</div>';
     }
 }
@@ -1427,12 +1260,14 @@ function cycleTheme() {
 // - Current-page translation
 // - Full-book translation in safe chunks
 // - IndexedDB checkpointing so a long book can resume
-// - OpenAI Responses API or any compatible proxy endpoint
+// - Google Gemini API (generateContent)
+// - API key is sent with x-goog-api-key
 // ═══════════════════════════════════════════════════════════
 
 const AI_TRANSLATION = {
-    apiUrl: 'https://api.openai.com/v1/responses',
-    model: 'gpt-5.6-luna',
+    provider: 'gemini',
+    apiUrl: 'https://generativelanguage.googleapis.com/v1beta',
+    model: 'gemini-3.8-flash',
     chunkSize: 5000,
     delay: 1200
 };
@@ -1453,6 +1288,12 @@ function persistTranslationSettings() {
 }
 
 loadTranslationSettings();
+if (!AI_TRANSLATION.apiUrl || AI_TRANSLATION.apiUrl.includes('api.openai.com') || AI_TRANSLATION.model === 'gpt-5.6-luna') {
+    AI_TRANSLATION.provider = 'gemini';
+    AI_TRANSLATION.apiUrl = 'https://generativelanguage.googleapis.com/v1beta';
+    AI_TRANSLATION.model = 'gemini-3.8-flash';
+    persistTranslationSettings();
+}
 
 function openTranslationModal(mode) {
     const modal = document.getElementById('translationModal');
@@ -1484,8 +1325,9 @@ function openTranslationSettings() {
 }
 
 function saveTranslationSettings() {
-    AI_TRANSLATION.apiUrl = (document.getElementById('aiApiUrl').value || '').trim() || 'https://api.openai.com/v1/responses';
-    AI_TRANSLATION.model = (document.getElementById('aiModel').value || '').trim() || 'gpt-5.6-luna';
+    AI_TRANSLATION.apiUrl = (document.getElementById('aiApiUrl').value || '').trim() || 'https://generativelanguage.googleapis.com/v1beta';
+    AI_TRANSLATION.model = (document.getElementById('aiModel').value || '').trim() || 'gemini-3.8-flash';
+    AI_TRANSLATION.provider = 'gemini';
     AI_TRANSLATION.chunkSize = Math.max(1500, Math.min(10000, parseInt(document.getElementById('aiChunkSize').value, 10) || 5000));
     AI_TRANSLATION.delay = Math.max(0, parseInt(document.getElementById('aiDelay').value, 10) || 1200);
     try { localStorage.setItem('vayanappura_ai_key', document.getElementById('aiApiKey').value.trim()); } catch (e) {}
@@ -1543,59 +1385,83 @@ function splitForTranslation(text, maxChars) {
 }
 
 function extractAIText(data) {
-    if (data && typeof data.output_text === 'string' && data.output_text.trim()) return data.output_text.trim();
-    const parts = [];
-    if (data && Array.isArray(data.output)) {
-        data.output.forEach(function (item) {
-            if (!item || !Array.isArray(item.content)) return;
-            item.content.forEach(function (c) {
-                if (c && typeof c.text === 'string') parts.push(c.text);
+    // Gemini generateContent response: candidates[0].content.parts[].text
+    if (data && Array.isArray(data.candidates)) {
+        const parts = [];
+        data.candidates.forEach(function (candidate) {
+            if (!candidate || !candidate.content || !Array.isArray(candidate.content.parts)) return;
+            candidate.content.parts.forEach(function (part) {
+                if (part && typeof part.text === 'string') parts.push(part.text);
             });
         });
+        const geminiText = parts.join('\n').trim();
+        if (geminiText) return geminiText;
     }
-    return parts.join('\n').trim();
+    return '';
 }
 
 async function callAITranslator(sourceText, signal) {
     const key = getTranslationApiKey();
-    if (!key) throw new Error('AI API Key നൽകിയിട്ടില്ല. ⚙️ കീ ചേർക്കുക.');
+    if (!key) throw new Error('Gemini API Key നൽകിയിട്ടില്ല. ⚙️ കീ ചേർക്കുക.');
 
     const prompt =
         'Translate the following book text into natural, fluent Malayalam (ml-IN). ' +
         'This is literary/book translation, not a summary. Translate everything faithfully. ' +
         'Preserve paragraph breaks, dialogue, names, numbers, quotations, headings, punctuation and meaning. ' +
-        'Do not add explanations, notes, labels, or commentary. Output only the Malayalam translation.\\n\\n' +
-        'SOURCE TEXT:\\n' + sourceText;
+        'Do not add explanations, notes, labels, or commentary. Output only the Malayalam translation.\n\n' +
+        'SOURCE TEXT:\n' + sourceText;
 
     const controller = new AbortController();
-    const timer = setTimeout(function () { controller.abort(); }, 90000);
+    const timer = setTimeout(function () { controller.abort(); }, 120000);
     const abortForward = function () { controller.abort(); };
     if (signal) signal.addEventListener('abort', abortForward, { once: true });
 
     try {
-        const res = await fetch(AI_TRANSLATION.apiUrl, {
+        let base = (AI_TRANSLATION.apiUrl || 'https://generativelanguage.googleapis.com/v1beta').trim();
+        base = base.replace(/\/+$/, '');
+        // Accept either the normal v1beta base URL or a full Gemini endpoint.
+        let endpoint = base;
+        if (!/:[^/]+$/.test(endpoint) && !/\/models\//.test(endpoint)) {
+            endpoint += '/models/' + encodeURIComponent(AI_TRANSLATION.model || 'gemini-3.8-flash') + ':generateContent';
+        }
+
+        const res = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + key
+                'x-goog-api-key': key
             },
             body: JSON.stringify({
-                model: AI_TRANSLATION.model,
-                input: prompt,
-                store: false
+                contents: [{
+                    role: 'user',
+                    parts: [{ text: prompt }]
+                }],
+                generationConfig: {
+                    temperature: 0.2
+                }
             }),
             signal: controller.signal
         });
 
         if (!res.ok) {
             let detail = '';
-            try { detail = await res.text(); } catch (e) {}
-            throw new Error('AI API HTTP ' + res.status + (detail ? ': ' + detail.slice(0, 300) : ''));
+            try {
+                const errData = await res.json();
+                detail = errData && errData.error && errData.error.message ? errData.error.message : JSON.stringify(errData);
+            } catch (e) {
+                try { detail = await res.text(); } catch (e2) {}
+            }
+            throw new Error('Gemini API HTTP ' + res.status + (detail ? ': ' + detail.slice(0, 500) : ''));
         }
 
         const data = await res.json();
         const text = extractAIText(data);
-        if (!text) throw new Error('AI response-ൽ translation text ലഭിച്ചില്ല.');
+        if (!text) {
+            const reason = data && data.promptFeedback && data.promptFeedback.blockReason
+                ? ' Prompt blocked: ' + data.promptFeedback.blockReason
+                : '';
+            throw new Error('Gemini response-ൽ translation text ലഭിച്ചില്ല.' + reason);
+        }
         return text;
     } finally {
         clearTimeout(timer);
@@ -1678,7 +1544,7 @@ async function translateFullBook() {
     const key = getTranslationApiKey();
     if (!key) {
         openTranslationModal('settings');
-        alert('ആദ്യം AI API Key ചേർക്കുക.');
+        alert('ആദ്യം Gemini API Key ചേർക്കുക.');
         return;
     }
 
