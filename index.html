@@ -384,10 +384,10 @@ const DL = {
     MAX_BYTES: 80 * 1024 * 1024
 };
 
-const MSG_NOT_FOUND = 'ഈ പുസ്തകം സൗജന്യ (പബ്ലിക് ഡൊമെയ്ൻ) ലൈബ്രറികളിൽ കണ്ടെത്താനായില്ല. പകർപ്പവകാശമുള്ള പുസ്തകമാകാം — മറ്റൊരു പുസ്തകം/പതിപ്പ് നോക്കുക.';
+const MSG_NOT_FOUND = 'ഈ പുസ്തകത്തിന്റെ സൗജന്യമായി ഡൗൺലോഡ് ചെയ്യാവുന്ന ടെക്സ്റ്റ് പതിപ്പ് കണ്ടെത്താനായില്ല. പകർപ്പവകാശമുള്ള പതിപ്പാണെങ്കിൽ Open Library-ൽ Borrow/Preview ഉപയോഗിക്കുക.';
 
-const MSG_NO_NET = 'സെർവറുകളുമായി ബന്ധപ്പെടാനായില്ല. ഇന്റർനെറ്റ് പരിശോധിച്ച് റീട്രൈ ചെയ്യുക.';
-const MSG_PARTIAL = 'ചില സെർവറുകൾ പ്രതികരിച്ചില്ല, അതിനാൽ പുസ്തകം കണ്ടെത്താനായില്ല. റീട്രൈ ചെയ്യുക (പകർപ്പവകാശമുള്ള പുസ്തകവുമാകാം).';
+const MSG_NO_NET = 'സെർവറുകളുമായി ബന്ധപ്പെടാനായില്ല. ഇന്റർനെറ്റ് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.';
+const MSG_PARTIAL = 'ചില download sources ലഭ്യമല്ലായിരുന്നു. ലഭ്യമായ legal source link താഴെ നൽകിയിട്ടുണ്ട്.';
 
 class DlError extends Error {
     constructor(msg, opts) {
@@ -860,6 +860,26 @@ async function* archiveCandidates(entry, signal) {
     } catch (e) { if (signal.aborted) throw abortErr(); }
 }
 
+// ---------- Open Library fallback ----------
+async function addOpenLibraryFallback(entry, signal) {
+    try {
+        const q = encodeURIComponent(String(entry.title || '') + (authorKnown(entry.author) ? ' ' + entry.author : ''));
+        const data = await fetchJSON('https://openlibrary.org/search.json?q=' + q + '&limit=5', signal, entry.lookupStat);
+        const docs = (data && data.docs) || [];
+        const best = docs.find(function (d) {
+            return titleOverlap(entry.title, d.title || '') >= 0.75;
+        });
+        if (!best) return;
+        const key = best.key || '';
+        if (key) {
+            const url = 'https://openlibrary.org' + key;
+            entry.links.push({ label: 'Open Library · Borrow / Preview', url: url, external: true });
+        }
+    } catch (e) {
+        if (signal.aborted) throw abortErr();
+    }
+}
+
 // lazily yields download candidates (so we don't search Archive if Gutenberg already works)
 async function* candidateStream(entry, signal) {
     setCardStatus(entry.bookId, 'Gutenberg തിരയുന്നു...', 'bg-indigo-100 text-indigo-700');
@@ -877,6 +897,11 @@ async function* candidateStream(entry, signal) {
     }
     setCardStatus(entry.bookId, 'Internet Archive തിരയുന്നു...', 'bg-indigo-100 text-indigo-700');
     for await (const c of archiveCandidates(entry, signal)) yield c;
+
+    // If no legal downloadable text was found, give the user a legal catalog/borrow link.
+    if (!entry.links.some(function (x) { return x.external; })) {
+        await addOpenLibraryFallback(entry, signal);
+    }
 }
 
 // ---------- orchestration ----------
@@ -923,9 +948,12 @@ async function downloadFromCandidates(entry, signal) {
         }
     }
     if (count === 0) {
+        // No downloadable candidate is not the same as a network failure.
+        // Keep legal catalog/borrow links available in the error card.
+        const hasExternal = entry.links && entry.links.some(function (x) { return x.external; });
+        if (hasExternal) throw new DlError(MSG_NOT_FOUND, { kind: 'notfound' });
         const st = entry.lookupStat || { ok: 0, fail: 0 };
         if (st.fail > 0 && st.ok === 0) throw new DlError(MSG_NO_NET, { kind: 'network' });
-        if (st.fail > 0) throw new DlError(MSG_PARTIAL, { kind: 'network' });
         throw new DlError(MSG_NOT_FOUND, { kind: 'notfound' });
     }
     if (onlyMissing) throw new DlError(MSG_NOT_FOUND, { kind: 'notfound' });
@@ -947,13 +975,23 @@ function markFailed(bookId, err) {
         m.classList.remove('hidden');
     }
     const lk = document.getElementById('dl_links_' + bookId);
-    if (lk && entry.links && entry.links.length && !(err && err.kind === 'notfound')) {
-        lk.innerHTML = '<div class="w-full text-slate-500">ആപ്പിൽ ഡൗൺലോഡ് ആയില്ലെങ്കിൽ ബ്രൗസറിൽ നേരിട്ട് എടുക്കാം:</div>' +
-            entry.links.map(function (l) {
+    if (lk && entry.links && entry.links.length) {
+        const externalOnly = entry.links.filter(function (l) { return l.external; });
+        const direct = entry.links.filter(function (l) { return !l.external; });
+        let html = '';
+        if (externalOnly.length) {
+            html += '<div class="w-full text-slate-500">സൗജന്യ download file കണ്ടെത്താനായില്ല. നിയമാനുസൃതമായി Borrow / Preview ചെയ്യാൻ:</div>';
+            html += externalOnly.map(function (l) {
+                return '<a href="' + escapeHtml(l.url) + '" target="_blank" rel="noopener" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-lg font-bold">' + escapeHtml(l.label) + ' ↗</a>';
+            }).join('');
+        }
+        if (direct.length && !(err && err.kind === 'notfound')) {
+            html += '<div class="w-full text-slate-500">ലഭ്യമായ direct file:</div>';
+            html += direct.map(function (l) {
                 return '<a href="' + escapeHtml(l.url) + '" target="_blank" rel="noopener" class="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded-lg font-bold">' + escapeHtml(l.label) + ' ⬇</a>';
-            }).join('') +
-            '<div class="w-full text-slate-400">TXT ആണെങ്കിൽ: സേവ് ചെയ്ത ശേഷം ലൈബ്രറി → "ഫയൽ ആഡ് ചെയ്യാം".</div>';
-        lk.classList.remove('hidden');
+            }).join('');
+        }
+        if (html) { lk.innerHTML = html; lk.classList.remove('hidden'); }
     }
     const sp = document.getElementById('dl_speed_' + bookId);
     if (sp) sp.innerText = '—';
