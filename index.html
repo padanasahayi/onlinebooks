@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>വായനപ്പുര (Vayanappura) - Full Mobile E-Reader</title>
+    <title>വായനപ്പുര (Vayanappura) - Offline E-Reader & Download Manager</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -52,7 +52,7 @@
             user-select: text;
             -webkit-user-select: text;
         }
-        /* Custom scrollbar for library */
+        /* Custom Scrollbars */
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -73,18 +73,21 @@
                 </div>
                 <h1 class="text-xl font-black tracking-tight font-ml">വായനപ്പുര</h1>
             </div>
-            <div id="save-badge" class="hidden items-center bg-brand-900/60 text-amber-300 text-xs px-2.5 py-1 rounded-full border border-amber-400/30 font-medium">
-                <i data-lucide="hard-drive-download" class="w-3.5 h-3.5 mr-1 text-emerald-400"></i>
-                <span id="saved-count-text">0 ബുക്കുകൾ</span>
+            <div class="flex items-center space-x-2">
+                <!-- Active Downloads Count Badge -->
+                <button onclick="switchTab('tab-downloads')" id="dl-badge" class="flex items-center bg-brand-900/60 text-amber-300 text-xs px-2.5 py-1 rounded-full border border-amber-400/30 font-medium hover:bg-brand-900 transition">
+                    <i data-lucide="download-cloud" class="w-3.5 h-3.5 mr-1 text-sky-400 animate-pulse"></i>
+                    <span id="dl-badge-count">0 ഡൗൺലോഡ്</span>
+                </button>
             </div>
         </div>
 
-        <!-- Reader Tool Header (Visible only in reader mode) -->
+        <!-- Reader Controls Header (Visible only in Reader tab) -->
         <div id="reader-controls-bar" class="hidden border-t border-white/10 px-4 py-2 flex items-center justify-between bg-brand-900/40 text-sm">
             <button id="btn-back-library" class="flex items-center text-slate-200 hover:text-white active:scale-95 transition">
                 <i data-lucide="arrow-left" class="w-5 h-5"></i>
             </button>
-            <div id="reader-book-title" class="font-semibold truncate max-w-[180px] text-xs text-amber-200">
+            <div id="reader-book-title" class="font-semibold truncate max-w-[160px] text-xs text-amber-200">
                 Siddhartha
             </div>
             <div class="flex items-center space-x-1">
@@ -100,11 +103,11 @@
     <!-- Main Scrollable Screen Area -->
     <main class="flex-1 max-w-md w-full mx-auto relative overflow-hidden flex flex-col bg-white dark:bg-slate-900 transition-colors">
 
-        <!-- TAB 1: DISCOVER / SEARCH VIEW -->
+        <!-- TAB 1: DISCOVER / CATALOG VIEW -->
         <section id="tab-discover" class="flex-1 flex flex-col p-4 overflow-y-auto space-y-4">
             <div class="bg-gradient-to-r from-brand-600 to-indigo-700 rounded-2xl p-4 text-white shadow-lg">
                 <h2 class="text-lg font-bold font-ml mb-1">സമ്പൂർണ്ണ പുസ്തകശാല</h2>
-                <p class="text-xs text-blue-100">ആയിരക്കണക്കിന് സൗജന്യ ക്ലാസിക് ബുക്കുകൾ മുഴുവനായും (Full Text) ഓഫ്‌ലൈനായി ഡൗൺലോഡ് ചെയ്തു വായിക്കാം.</p>
+                <p class="text-xs text-blue-100">ആയിരക്കണക്കിന് സൗജന്യ ക്ലാസിക് ബുക്കുകൾ ഡൗൺലോഡ് മാനേജർ വഴി മുഴുവനായി ഫോണിലേക്ക് സേവ് ചെയ്യാം.</p>
                 
                 <div class="mt-3 flex items-center bg-white rounded-xl px-3 py-2 text-slate-800 shadow-inner">
                     <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-2 flex-shrink-0"></i>
@@ -113,25 +116,24 @@
                 </div>
             </div>
 
-            <!-- Custom File Upload Option -->
-            <div class="border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-3 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
-                <div>
-                    <div class="text-xs font-bold text-slate-700 dark:text-slate-200">സ്വന്തം പുസ്തകങ്ങൾ അപ്‌ലോഡ് ചെയ്യാം</div>
-                    <div class="text-[10px] text-slate-500 dark:text-slate-400">Add local .txt / complete book text files</div>
+            <!-- Custom TXT URL or Local File Upload Container -->
+            <div class="grid grid-cols-1 gap-2">
+                <div class="border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-3 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-bold text-slate-700 dark:text-slate-200">സ്വന്തം ഫയലുകൾ അപ്‌ലോഡ് ചെയ്യാം</div>
+                        <div class="text-[10px] text-slate-500 dark:text-slate-400">Import local .txt book files directly</div>
+                    </div>
+                    <label class="cursor-pointer bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 text-xs px-3 py-1.5 rounded-lg font-medium flex items-center">
+                        <i data-lucide="upload" class="w-3.5 h-3.5 mr-1"></i>
+                        Upload
+                        <input type="file" id="file-upload-input" accept=".txt,.text" class="hidden">
+                    </label>
                 </div>
-                <label class="cursor-pointer bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 text-xs px-3 py-1.5 rounded-lg font-medium flex items-center">
-                    <i data-lucide="upload" class="w-3.5 h-3.5 mr-1"></i>
-                    Upload
-                    <input type="file" id="file-upload-input" accept=".txt,.text" class="hidden">
-                </label>
             </div>
 
-            <!-- Pre-loaded / Search Results Header -->
-            <div class="flex items-center justify-between pt-2">
-                <h3 id="discover-section-title" class="text-xs font-bold uppercase tracking-wider text-slate-500">ജനപ്രിയ പുസ്തകങ്ങൾ (Popular Classics)</h3>
-                <span id="loading-spinner" class="hidden text-brand-600 animate-spin">
-                    <i data-lucide="loader-2" class="w-4 h-4"></i>
-                </span>
+            <!-- Catalog Section Header -->
+            <div class="flex items-center justify-between pt-1">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">ജനപ്രിയ ക്ലാസിക്കുകൾ (Popular Classics)</h3>
             </div>
 
             <!-- Book Cards Grid -->
@@ -140,7 +142,37 @@
             </div>
         </section>
 
-        <!-- TAB 2: MY LIBRARY VIEW (OFFLINE INDEXEDDB STORED BOOKS) -->
+        <!-- TAB 2: DOWNLOAD MANAGER VIEW -->
+        <section id="tab-downloads" class="hidden flex-1 flex flex-col p-4 overflow-y-auto space-y-4">
+            <div class="flex items-center justify-between border-b pb-3 dark:border-slate-800">
+                <div>
+                    <h2 class="text-base font-bold font-ml text-slate-800 dark:text-slate-100 flex items-center">
+                        <i data-lucide="download-cloud" class="w-5 h-5 text-brand-600 mr-2"></i>
+                        ഡൗൺലോഡ് മാനേജർ (Download Manager)
+                    </h2>
+                    <p class="text-xs text-slate-500">പുസ്തകങ്ങൾ പശ്ചാത്തലത്തിൽ ഡൗൺലോഡ് ചെയ്യപ്പെടുന്നു</p>
+                </div>
+                <button onclick="clearCompletedDownloads()" class="text-[11px] text-slate-500 hover:text-red-500 font-medium">
+                    Clear Ended
+                </button>
+            </div>
+
+            <!-- Active Downloads Queue Container -->
+            <div id="downloads-queue-list" class="space-y-3 pb-16">
+                <!-- Empty Download Manager State -->
+                <div id="empty-downloads-msg" class="text-center py-12 px-4 space-y-3">
+                    <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-400">
+                        <i data-lucide="arrow-down-circle" class="w-8 h-8"></i>
+                    </div>
+                    <p class="text-sm font-medium text-slate-600 dark:text-slate-400">നിലവിൽ ഡൗൺലോഡുകൾ ഒന്നും നടക്കുന്നില്ല.</p>
+                    <button onclick="switchTab('tab-discover')" class="text-xs bg-brand-600 text-white px-4 py-2 rounded-xl font-medium shadow-md">
+                        പുസ്തകം ഡൗൺലോഡ് ചെയ്യുക
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: MY LIBRARY VIEW (OFFLINE INDEXEDDB STORED BOOKS) -->
         <section id="tab-library" class="hidden flex-1 flex flex-col p-4 overflow-y-auto space-y-4">
             <div class="flex items-center justify-between border-b pb-3 dark:border-slate-800">
                 <div>
@@ -151,23 +183,23 @@
             </div>
 
             <div id="offline-books-list" class="space-y-3 pb-16">
-                <!-- Empty state placeholder -->
+                <!-- Empty Library State -->
                 <div id="empty-library-msg" class="text-center py-12 px-4 space-y-3">
                     <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-400">
                         <i data-lucide="book-marked" class="w-8 h-8"></i>
                     </div>
-                    <p class="text-sm font-medium text-slate-600 dark:text-slate-400">ഓഫ്‌ലൈൻ ലൈബ്രറിയിൽ പുസ്തകങ്ങൾ ഒന്നുമില്ല.</p>
+                    <p class="text-sm font-medium text-slate-600 dark:text-slate-400">ഓഫ്‌‌ലൈൻ ലൈബ്രറിയിൽ പുസ്തകങ്ങൾ ഒന്നുമില്ല.</p>
                     <button onclick="switchTab('tab-discover')" class="text-xs bg-brand-600 text-white px-4 py-2 rounded-xl font-medium shadow-md">
-                        പുതിയ പുസ്തകങ്ങൾ കണ്ടെത്തുക
+                        പുസ്തകങ്ങൾ കണ്ടെത്തുക
                     </button>
                 </div>
             </div>
         </section>
 
-        <!-- TAB 3: E-READER READING VIEW -->
+        <!-- TAB 4: E-READER READING VIEW -->
         <section id="tab-reader" class="hidden flex-1 flex flex-col relative overflow-hidden bg-white dark:bg-slate-950 transition-colors">
             
-            <!-- Translation & Mini AI Bar Header -->
+            <!-- Translation Header Bar -->
             <div id="translation-bar" class="bg-slate-100 dark:bg-slate-800/80 px-3 py-2 border-b dark:border-slate-800 flex items-center justify-between flex-none">
                 <div class="flex items-center space-x-1.5 text-xs text-slate-600 dark:text-slate-300">
                     <i data-lucide="cpu" class="w-4 h-4 text-brand-500"></i>
@@ -179,34 +211,36 @@
                 </button>
             </div>
 
-            <!-- Main Dynamic Text Page Container -->
+            <!-- Dynamic Text Page Viewport -->
             <div id="reader-viewport" class="flex-1 p-5 overflow-y-auto relative text-slate-800 dark:text-slate-100 leading-relaxed font-normal readable-text transition-all duration-150">
                 <div id="reader-content" class="min-h-full space-y-3">
-                    <!-- Dynamic Page Text Injected Here -->
                     <div class="flex items-center justify-center h-48 text-slate-400">
-                        <i data-lucide="loader-2" class="w-6 h-6 animate-spin mr-2"></i>
-                        <span>പുസ്തകം ലോഡ് ചെയ്യുന്നു...</span>
+                        <i data-lucide="book-open" class="w-6 h-6 mr-2"></i>
+                        <span>വായിക്കാൻ ഒരു പുസ്തകം തിരഞ്ഞെടുക്കൂ...</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Voice Audio Engine Controls Bar -->
+            <!-- Voice TTS Engine Controls Bar -->
             <div id="voice-controls-bar" class="bg-slate-900 text-white px-4 py-2.5 flex items-center justify-between border-t border-slate-800 shadow-xl flex-none">
                 <div class="flex items-center space-x-2 text-xs">
-                    <i data-lucide="volume-2" class="w-4 h-4 text-emerald-400 animate-pulse"></i>
+                    <i data-lucide="volume-2" class="w-4 h-4 text-emerald-400"></i>
                     <span id="voice-status" class="text-slate-300 text-[11px] font-medium truncate max-w-[150px]">മലയാളം sound</span>
                 </div>
                 <div class="flex items-center space-x-2">
                     <button id="btn-voice-play" class="w-8 h-8 rounded-full bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center shadow">
                         <i data-lucide="play" class="w-4 h-4 fill-current ml-0.5"></i>
                     </button>
-                    <button id="btn-voice-stop" class="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center shadow">
+                    <button id="btn-voice-pause" class="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center shadow">
+                        <i data-lucide="pause" class="w-3.5 h-3.5 fill-current"></i>
+                    </button>
+                    <button id="btn-voice-stop" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center shadow">
                         <i data-lucide="square" class="w-3.5 h-3.5 fill-current"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Page Navigation Controls Bar -->
+            <!-- Page Navigation Bar -->
             <div class="border-t dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-2.5 flex items-center justify-between flex-none">
                 <button id="btn-prev-page" class="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-300 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center disabled:opacity-40">
                     <i data-lucide="chevron-left" class="w-4 h-4 mr-1"></i> മുൻപ്
@@ -226,10 +260,15 @@
 
     <!-- Bottom Mobile Navigation Bar -->
     <nav id="bottom-nav" class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-30 max-w-md mx-auto w-full flex-none">
-        <div class="grid grid-cols-3 py-1.5">
+        <div class="grid grid-cols-4 py-1.5">
             <button onclick="switchTab('tab-discover')" id="nav-btn-discover" class="nav-btn active flex flex-col items-center py-1 text-brand-600 dark:text-brand-400">
                 <i data-lucide="compass" class="w-5 h-5"></i>
                 <span class="text-[10px] font-medium mt-1 font-ml">തിരയുക</span>
+            </button>
+            <button onclick="switchTab('tab-downloads')" id="nav-btn-downloads" class="nav-btn flex flex-col items-center py-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 relative">
+                <i data-lucide="download-cloud" class="w-5 h-5"></i>
+                <span class="text-[10px] font-medium mt-1 font-ml">ഡൗൺലോഡുകൾ</span>
+                <span id="nav-dl-dot" class="hidden absolute top-1 right-5 w-2 h-2 bg-sky-500 rounded-full animate-ping"></span>
             </button>
             <button onclick="switchTab('tab-library')" id="nav-btn-library" class="nav-btn flex flex-col items-center py-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                 <i data-lucide="bookmark" class="w-5 h-5"></i>
@@ -242,29 +281,15 @@
         </div>
     </nav>
 
-    <!-- Modal Alert / Loading Overlay -->
-    <div id="modal-overlay" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-xs w-full p-5 shadow-2xl text-center space-y-3 border dark:border-slate-800">
-            <div id="modal-icon" class="w-12 h-12 bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400 rounded-full flex items-center justify-center mx-auto">
-                <i data-lucide="download-cloud" class="w-6 h-6 animate-bounce"></i>
-            </div>
-            <h3 id="modal-title" class="text-sm font-bold text-slate-800 dark:text-slate-100 font-ml">സമ്പൂർണ്ണ പുസ്തകം ഡൗൺലോഡ് ചെയ്യുന്നു...</h3>
-            <p id="modal-desc" class="text-xs text-slate-500 leading-relaxed">നിമിഷങ്ങൾക്കകം മുഴുവൻ പേജുകളും നിങ്ങളുടെ ഫോണിലേക്ക് സേവ് ചെയ്യപ്പെടും.</p>
-            <div id="modal-progress-bar" class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                <div id="modal-progress" class="bg-brand-600 h-full w-1/3 transition-all duration-300"></div>
-            </div>
-            <button id="modal-close-btn" class="hidden w-full bg-slate-800 text-white text-xs py-2 rounded-xl font-medium">ഓക്കെ</button>
-        </div>
-    </div>
-
     <script>
         /* ----------------------------------------------------
-           1. INDEXEDDB STORAGE CONTROLLER
+           1. INDEXEDDB CONTROLLER
            ---------------------------------------------------- */
         const DB_NAME = 'vayanappura_db';
-        const DB_VERSION = 1;
+        const DB_VERSION = 2;
         const STORE_BOOKS = 'full_books';
         const STORE_TRANSLATIONS = 'translations_cache';
+        const STORE_DOWNLOADS = 'download_tasks';
 
         let db = null;
 
@@ -280,6 +305,9 @@
                     if (!database.objectStoreNames.contains(STORE_TRANSLATIONS)) {
                         database.createObjectStore(STORE_TRANSLATIONS, { keyPath: 'cacheKey' });
                     }
+                    if (!database.objectStoreNames.contains(STORE_DOWNLOADS)) {
+                        database.createObjectStore(STORE_DOWNLOADS, { keyPath: 'id' });
+                    }
                 };
 
                 request.onsuccess = (e) => {
@@ -288,10 +316,7 @@
                     resolve(db);
                 };
 
-                request.onerror = (e) => {
-                    console.error('IndexedDB error:', e);
-                    reject(e);
-                };
+                request.onerror = (e) => reject(e);
             });
         }
 
@@ -299,13 +324,12 @@
             if (!db) await initDB();
             return new Promise((resolve, reject) => {
                 const tx = db.transaction([STORE_BOOKS], 'readwrite');
-                const store = tx.objectStore(STORE_BOOKS);
-                const req = store.put(bookObj);
-                req.onsuccess = () => {
+                tx.objectStore(STORE_BOOKS).put(bookObj);
+                tx.oncomplete = () => {
                     updateLibraryCountBadge();
                     resolve(true);
                 };
-                req.onerror = (err) => reject(err);
+                tx.onerror = (err) => reject(err);
             });
         }
 
@@ -313,8 +337,7 @@
             if (!db) await initDB();
             return new Promise((resolve, reject) => {
                 const tx = db.transaction([STORE_BOOKS], 'readonly');
-                const store = tx.objectStore(STORE_BOOKS);
-                const req = store.get(bookId);
+                const req = tx.objectStore(STORE_BOOKS).get(bookId);
                 req.onsuccess = () => resolve(req.result);
                 req.onerror = (err) => reject(err);
             });
@@ -324,8 +347,7 @@
             if (!db) await initDB();
             return new Promise((resolve, reject) => {
                 const tx = db.transaction([STORE_BOOKS], 'readonly');
-                const store = tx.objectStore(STORE_BOOKS);
-                const req = store.getAll();
+                const req = tx.objectStore(STORE_BOOKS).getAll();
                 req.onsuccess = () => resolve(req.result || []);
                 req.onerror = (err) => reject(err);
             });
@@ -335,13 +357,39 @@
             if (!db) await initDB();
             return new Promise((resolve, reject) => {
                 const tx = db.transaction([STORE_BOOKS], 'readwrite');
-                const store = tx.objectStore(STORE_BOOKS);
-                const req = store.delete(bookId);
-                req.onsuccess = () => {
+                tx.objectStore(STORE_BOOKS).delete(bookId);
+                tx.oncomplete = () => {
                     updateLibraryCountBadge();
                     resolve(true);
                 };
-                req.onerror = (err) => reject(err);
+            });
+        }
+
+        async function saveDownloadTaskToDB(taskObj) {
+            if (!db) await initDB();
+            return new Promise((resolve) => {
+                const tx = db.transaction([STORE_DOWNLOADS], 'readwrite');
+                tx.objectStore(STORE_DOWNLOADS).put(taskObj);
+                tx.oncomplete = () => resolve(true);
+            });
+        }
+
+        async function getAllDownloadTasksFromDB() {
+            if (!db) await initDB();
+            return new Promise((resolve) => {
+                const tx = db.transaction([STORE_DOWNLOADS], 'readonly');
+                const req = tx.objectStore(STORE_DOWNLOADS).getAll();
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => resolve([]);
+            });
+        }
+
+        async function deleteDownloadTaskFromDB(id) {
+            if (!db) await initDB();
+            return new Promise((resolve) => {
+                const tx = db.transaction([STORE_DOWNLOADS], 'readwrite');
+                tx.objectStore(STORE_DOWNLOADS).delete(id);
+                tx.oncomplete = () => resolve(true);
             });
         }
 
@@ -363,22 +411,11 @@
 
         async function updateLibraryCountBadge() {
             const books = await getAllBooksFromDB();
-            const count = books.length;
-            document.getElementById('library-count-badge').innerText = count;
-            const badge = document.getElementById('save-badge');
-            const savedText = document.getElementById('saved-count-text');
-            if (count > 0) {
-                badge.classList.remove('hidden');
-                badge.classList.add('flex');
-                savedText.innerText = `${count} ബുക്കുകൾ`;
-            } else {
-                badge.classList.add('hidden');
-                badge.classList.remove('flex');
-            }
+            document.getElementById('library-count-badge').innerText = books.length;
         }
 
         /* ----------------------------------------------------
-           2. APP STATE & POPULAR CLASSIC CATALOG
+           2. CATALOG & DOWNLOAD MANAGER ENGINE
            ---------------------------------------------------- */
         const CATALOG = [
             {
@@ -415,74 +452,291 @@
             }
         ];
 
-        let currentActiveBook = null;
-        let currentPageIndex = 0;
-        let currentPagesList = [];
-        let isTranslatedMode = false;
-        let fontSizePx = 16;
-        let currentTheme = 'light'; // 'light', 'dark', 'sepia'
+        let activeDownloadTasks = {}; // Stores live download task controllers
 
-        /* ----------------------------------------------------
-           3. FULL TEXT FETCH & CLEANING ENGINE
-           ---------------------------------------------------- */
-        async function fetchFullBookText(gutenbergId) {
-            // CORS Proxies for direct Gutenberg Plain Text access
+        class DownloadTask {
+            constructor(catalogItem) {
+                this.id = catalogItem.id;
+                this.title = catalogItem.title;
+                this.author = catalogItem.author;
+                this.cover = catalogItem.cover;
+                this.gutenbergId = catalogItem.gutenbergId;
+                this.progress = 0; // 0 to 100
+                this.downloadedBytes = 0;
+                this.totalBytes = 0;
+                this.status = 'downloading'; // 'downloading', 'paused', 'completed', 'error'
+                this.controller = new AbortController();
+            }
+        }
+
+        async function startBookDownload(bookId) {
+            const item = CATALOG.find(c => c.id === bookId);
+            if (!item) return;
+
+            // Check if already in DB
+            const existing = await getBookFromDB(bookId);
+            if (existing) {
+                switchTab('tab-library');
+                return;
+            }
+
+            if (activeDownloadTasks[bookId]) {
+                switchTab('tab-downloads');
+                return;
+            }
+
+            const task = new DownloadTask(item);
+            activeDownloadTasks[bookId] = task;
+            await saveDownloadTaskToDB(serializeTask(task));
+
+            switchTab('tab-downloads');
+            renderDownloadManagerUI();
+            executeDownloadTask(task);
+        }
+
+        function serializeTask(task) {
+            return {
+                id: task.id,
+                title: task.title,
+                author: task.author,
+                cover: task.cover,
+                gutenbergId: task.gutenbergId,
+                progress: task.progress,
+                downloadedBytes: task.downloadedBytes,
+                totalBytes: task.totalBytes,
+                status: task.status
+            };
+        }
+
+        async function executeDownloadTask(task) {
+            const gutenbergId = task.gutenbergId;
             const primaryUrl = `https://www.gutenberg.org/files/${gutenbergId}/${gutenbergId}-0.txt`;
             const fallbackUrl = `https://www.gutenberg.org/cache/epub/${gutenbergId}/pg${gutenbergId}.txt`;
 
             const proxies = [
                 `https://corsproxy.io/?${encodeURIComponent(primaryUrl)}`,
                 `https://api.allorigins.win/raw?url=${encodeURIComponent(primaryUrl)}`,
-                `https://corsproxy.io/?${encodeURIComponent(fallbackUrl)}`,
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(fallbackUrl)}`
+                `https://corsproxy.io/?${encodeURIComponent(fallbackUrl)}`
             ];
 
-            let rawText = null;
+            let textContent = null;
+            task.status = 'downloading';
+            task.progress = 15;
+            updateTaskState(task);
 
-            for (const url of proxies) {
+            for (let url of proxies) {
+                if (task.status === 'paused') return;
                 try {
-                    const res = await fetch(url);
-                    if (res.ok) {
-                        const txt = await res.text();
-                        if (txt && txt.length > 5000) { // Verify it's a real full book, not error page
-                            rawText = txt;
-                            break;
+                    const response = await fetch(url, { signal: task.controller.signal });
+                    if (response.ok) {
+                        const reader = response.body.getReader();
+                        const contentLength = +response.headers.get('Content-Length') || 650000;
+                        task.totalBytes = contentLength;
+
+                        let receivedLength = 0;
+                        let chunks = [];
+
+                        while(true) {
+                            if (task.status === 'paused') {
+                                reader.cancel();
+                                return;
+                            }
+                            const {done, value} = await reader.read();
+                            if (done) break;
+
+                            chunks.push(value);
+                            receivedLength += value.length;
+                            task.downloadedBytes = receivedLength;
+                            task.progress = Math.min(95, Math.round((receivedLength / contentLength) * 100));
+                            updateTaskState(task);
                         }
+
+                        let chunksAll = new Uint8Array(receivedLength);
+                        let position = 0;
+                        for(let chunk of chunks) {
+                            chunksAll.set(chunk, position);
+                            position += chunk.length;
+                        }
+
+                        textContent = new TextDecoder("utf-8").decode(chunksAll);
+                        if (textContent && textContent.length > 5000) break;
                     }
                 } catch (err) {
-                    console.warn('Proxy attempt failed, trying next...', err);
+                    if (err.name === 'AbortError') return;
+                    console.warn('Proxy fetch failed, trying next proxy...', err);
                 }
             }
 
-            if (!rawText) {
-                throw new Error('മുഴുവൻ പുസ്തകവും ഡൗൺലോഡ് ചെയ്യാൻ സാധിച്ചില്ല. നെറ്റ്‌വർക്ക് പരിശോധിക്കുക.');
+            if (textContent) {
+                const cleanedText = cleanGutenbergText(textContent);
+                const pages = paginateFullText(cleanedText);
+
+                const bookObj = {
+                    id: task.id,
+                    title: task.title,
+                    author: task.author,
+                    fullText: cleanedText,
+                    pages: pages,
+                    totalPages: pages.length,
+                    lastReadPage: 0,
+                    cover: task.cover,
+                    savedAt: Date.now()
+                };
+
+                await saveBookToDB(bookObj);
+
+                task.progress = 100;
+                task.status = 'completed';
+                updateTaskState(task);
+                renderLibraryView();
+            } else {
+                task.status = 'error';
+                updateTaskState(task);
+            }
+        }
+
+        function pauseDownloadTask(bookId) {
+            const task = activeDownloadTasks[bookId];
+            if (task) {
+                task.status = 'paused';
+                if (task.controller) task.controller.abort();
+                updateTaskState(task);
+            }
+        }
+
+        function resumeDownloadTask(bookId) {
+            const task = activeDownloadTasks[bookId];
+            if (task) {
+                task.controller = new AbortController();
+                executeDownloadTask(task);
+            }
+        }
+
+        async function cancelDownloadTask(bookId) {
+            const task = activeDownloadTasks[bookId];
+            if (task && task.controller) {
+                task.controller.abort();
+            }
+            delete activeDownloadTasks[bookId];
+            await deleteDownloadTaskFromDB(bookId);
+            renderDownloadManagerUI();
+        }
+
+        async function updateTaskState(task) {
+            await saveDownloadTaskToDB(serializeTask(task));
+            renderDownloadManagerUI();
+        }
+
+        async function clearCompletedDownloads() {
+            const tasks = await getAllDownloadTasksFromDB();
+            for (let t of tasks) {
+                if (t.status === 'completed' || t.status === 'error') {
+                    delete activeDownloadTasks[t.id];
+                    await deleteDownloadTaskFromDB(t.id);
+                }
+            }
+            renderDownloadManagerUI();
+        }
+
+        async function renderDownloadManagerUI() {
+            const listContainer = document.getElementById('downloads-queue-list');
+            const emptyMsg = document.getElementById('empty-downloads-msg');
+            const tasks = await getAllDownloadTasksFromDB();
+
+            // Update badge
+            const activeCount = tasks.filter(t => t.status === 'downloading').length;
+            document.getElementById('dl-badge-count').innerText = `${activeCount} ഡൗൺലോഡ്`;
+            const dot = document.getElementById('nav-dl-dot');
+            if (activeCount > 0) dot.classList.remove('hidden');
+            else dot.classList.add('hidden');
+
+            if (tasks.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                listContainer.innerHTML = '';
+                listContainer.appendChild(emptyMsg);
+                return;
             }
 
-            return cleanGutenbergText(rawText);
+            emptyMsg.classList.add('hidden');
+            listContainer.innerHTML = '';
+
+            tasks.forEach(t => {
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-slate-800 rounded-2xl p-3.5 border border-slate-100 dark:border-slate-800 shadow-sm space-y-2.5";
+                
+                let statusBadge = `<span class="text-sky-600 dark:text-sky-400 font-semibold">ഡൗൺലോഡ് ചെയ്യുന്നു...</span>`;
+                if (t.status === 'paused') statusBadge = `<span class="text-amber-500 font-semibold">തടസ്സപ്പെട്ടു (Paused)</span>`;
+                if (t.status === 'completed') statusBadge = `<span class="text-emerald-500 font-semibold">പൂർത്തിയായി (Saved)</span>`;
+                if (t.status === 'error') statusBadge = `<span class="text-red-500 font-semibold">തടസ്സപ്പെട്ടു (Failed)</span>`;
+
+                const formattedDownloaded = (t.downloadedBytes / 1024).toFixed(1);
+                const formattedTotal = (t.totalBytes / 1024).toFixed(1);
+
+                card.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <img src="${t.cover}" class="w-10 h-14 object-cover rounded-lg flex-shrink-0">
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-bold text-xs text-slate-800 dark:text-slate-100 truncate">${t.title}</h4>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">${t.author}</p>
+                            <div class="flex items-center justify-between text-[10px] mt-1">
+                                ${statusBadge}
+                                <span class="text-slate-400">${formattedDownloaded} KB / ${formattedTotal} KB</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                        <div class="bg-brand-600 h-full transition-all duration-300" style="width: ${t.progress}%"></div>
+                    </div>
+                    <!-- Action Buttons -->
+                    <div class="flex items-center justify-between pt-1 text-xs">
+                        <span class="text-[10px] text-slate-400 font-bold">${t.progress}%</span>
+                        <div class="flex items-center space-x-2">
+                            ${t.status === 'downloading' ? `
+                                <button onclick="pauseDownloadTask('${t.id}')" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-[11px] font-medium flex items-center">
+                                    <i data-lucide="pause" class="w-3 h-3 mr-1"></i> Pause
+                                </button>
+                            ` : ''}
+                            ${t.status === 'paused' || t.status === 'error' ? `
+                                <button onclick="resumeDownloadTask('${t.id}')" class="px-2.5 py-1 bg-brand-600 text-white rounded-lg text-[11px] font-medium flex items-center">
+                                    <i data-lucide="play" class="w-3 h-3 mr-1"></i> Resume
+                                </button>
+                            ` : ''}
+                            ${t.status === 'completed' ? `
+                                <button onclick="openStoredBook('${t.id}')" class="px-3 py-1 bg-emerald-600 text-white rounded-lg text-[11px] font-bold flex items-center">
+                                    <i data-lucide="book-open" class="w-3 h-3 mr-1"></i> വായിക്കുക
+                                </button>
+                            ` : ''}
+                            <button onclick="cancelDownloadTask('${t.id}')" class="p-1 text-slate-400 hover:text-red-500 rounded-lg">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+            lucide.createIcons();
         }
+
+        /* ----------------------------------------------------
+           3. FULL BOOK READER & MINI AI TRANSLATOR
+           ---------------------------------------------------- */
+        let currentActiveBook = null;
+        let currentPageIndex = 0;
+        let currentPagesList = [];
+        let isTranslatedMode = false;
+        let fontSizePx = 16;
+        let currentTheme = 'light';
 
         function cleanGutenbergText(text) {
-            // Remove Gutenberg Legal Disclaimers & Headers
             let cleaned = text;
-
             const headerMatch = cleaned.match(/\*\*\* START OF (THE|THIS) PROJECT GUTENBERG EBOOK .*\*\*/i);
-            if (headerMatch) {
-                cleaned = cleaned.substring(headerMatch.index + headerMatch[0].length);
-            }
-
+            if (headerMatch) cleaned = cleaned.substring(headerMatch.index + headerMatch[0].length);
             const footerMatch = cleaned.match(/\*\*\* END OF (THE|THIS) PROJECT GUTENBERG EBOOK .*\*\*/i);
-            if (footerMatch) {
-                cleaned = cleaned.substring(0, footerMatch.index);
-            }
-
-            // Standardize line breaks & paragraphs
-            cleaned = cleaned.replace(/\r\n/g, '\n');
-            cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
-            
-            return cleaned.trim();
+            if (footerMatch) cleaned = cleaned.substring(0, footerMatch.index);
+            return cleaned.replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
         }
 
-        // Calculates dynamic pagination based on character length & paragraphs
         function paginateFullText(fullText, charsPerPage = 950) {
             const paragraphs = fullText.split('\n\n');
             const pages = [];
@@ -491,7 +745,6 @@
             for (let para of paragraphs) {
                 para = para.trim();
                 if (!para) continue;
-
                 if ((currentPage.length + para.length) > charsPerPage && currentPage.length > 0) {
                     pages.push(currentPage.trim());
                     currentPage = para;
@@ -499,45 +752,22 @@
                     currentPage += (currentPage ? "\n\n" : "") + para;
                 }
             }
-
-            if (currentPage.trim().length > 0) {
-                pages.push(currentPage.trim());
-            }
-
+            if (currentPage.trim().length > 0) pages.push(currentPage.trim());
             return pages.length > 0 ? pages : ["ശൂന്യമായ താൾ."];
         }
 
-        /* ----------------------------------------------------
-           4. MINI AI FAST MALAYALAM TRANSLATOR MODULE
-           ---------------------------------------------------- */
         async function translateTextToMalayalam(text, bookId, pageNum) {
             const cacheKey = `${bookId}_page_${pageNum}`;
-            
-            // Check IndexedDB cache first
             const cached = await getTranslationFromCache(cacheKey);
             if (cached) return cached;
 
-            // Split into manageable chunks for fast translation APIs
-            const maxChunk = 450;
             const paragraphs = text.split('\n\n');
             let translatedParagraphs = [];
 
             for (let para of paragraphs) {
-                if (para.trim().length === 0) continue;
-
-                if (para.length > maxChunk) {
-                    // Split sentences
-                    const sentences = para.match(/[^.!?]+[.!?]+/g) || [para];
-                    let transChunk = "";
-                    for (let s of sentences) {
-                        const tr = await callTranslationAPI(s);
-                        transChunk += " " + tr;
-                    }
-                    translatedParagraphs.push(transChunk.trim());
-                } else {
-                    const tr = await callTranslationAPI(para);
-                    translatedParagraphs.push(tr);
-                }
+                if (!para.trim()) continue;
+                const tr = await callTranslationAPI(para);
+                translatedParagraphs.push(tr);
             }
 
             const fullTranslatedPage = translatedParagraphs.join('\n\n');
@@ -547,38 +777,128 @@
 
         async function callTranslationAPI(queryText) {
             try {
-                // Free, fast Google Translate mirror API endpoint
                 const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ml&dt=t&q=${encodeURIComponent(queryText)}`;
                 const res = await fetch(url);
                 if (res.ok) {
                     const data = await res.json();
-                    if (data && data[0]) {
-                        return data[0].map(item => item[0]).join('');
-                    }
+                    if (data && data[0]) return data[0].map(item => item[0]).join('');
                 }
-            } catch (err) {
-                console.warn('Translation mirror error, falling back:', err);
-            }
+            } catch (err) {}
 
-            // Fallback MyMemory translation API
             try {
                 const fallbackUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(queryText)}&langpair=en|ml`;
                 const res = await fetch(fallbackUrl);
                 if (res.ok) {
                     const data = await res.json();
-                    if (data && data.responseData) {
-                        return data.responseData.translatedText;
-                    }
+                    if (data && data.responseData) return data.responseData.translatedText;
                 }
-            } catch (err) {
-                console.error('All translation APIs failed', err);
+            } catch (err) {}
+
+            return queryText;
+        }
+
+        async function openStoredBook(bookId) {
+            const bookData = await getBookFromDB(bookId);
+            if (bookData) {
+                currentActiveBook = bookData;
+                currentPagesList = bookData.pages || paginateFullText(bookData.fullText || "");
+                currentPageIndex = bookData.lastReadPage || 0;
+                isTranslatedMode = false;
+
+                document.getElementById('reader-book-title').innerText = bookData.title;
+                document.getElementById('total-pages-num').innerText = currentPagesList.length;
+
+                renderPageContent();
+                switchTab('tab-reader');
+            }
+        }
+
+        async function renderPageContent() {
+            if (!currentActiveBook || !currentPagesList[currentPageIndex]) return;
+
+            const viewport = document.getElementById('reader-viewport');
+            const contentDiv = document.getElementById('reader-content');
+            document.getElementById('current-page-num').innerText = currentPageIndex + 1;
+
+            const rawEnglishPage = currentPagesList[currentPageIndex];
+            const btnText = document.getElementById('translate-btn-text');
+
+            if (isTranslatedMode) {
+                btnText.innerText = "Original English";
+                contentDiv.innerHTML = `
+                    <div class="flex items-center justify-center py-12 text-brand-600 dark:text-brand-400 font-medium text-xs">
+                        <i data-lucide="loader-2" class="w-5 h-5 animate-spin mr-2"></i>
+                        <span>Mini AI മലയാളത്തിലേക്ക് മാറ്റുന്നു...</span>
+                    </div>
+                `;
+                lucide.createIcons();
+
+                const translatedText = await translateTextToMalayalam(rawEnglishPage, currentActiveBook.id, currentPageIndex);
+                contentDiv.innerHTML = translatedText.split('\n\n').map(p => `<p class="leading-relaxed mb-3 text-justify font-ml">${p}</p>`).join('');
+            } else {
+                btnText.innerText = "മലയാളത്തിലേക്ക് മാറ്റുക";
+                contentDiv.innerHTML = rawEnglishPage.split('\n\n').map(p => `<p class="leading-relaxed mb-3 text-justify">${p}</p>`).join('');
             }
 
-            return queryText; // Return original if all APIs fail
+            viewport.scrollTop = 0;
+            currentActiveBook.lastReadPage = currentPageIndex;
+            saveBookToDB(currentActiveBook);
+
+            document.getElementById('btn-prev-page').disabled = currentPageIndex === 0;
+            document.getElementById('btn-next-page').disabled = currentPageIndex >= currentPagesList.length - 1;
         }
 
         /* ----------------------------------------------------
-           5. UI CONTROLLERS & EVENT HANDLERS
+           4. TTS VOICE CONTROLLER
+           ---------------------------------------------------- */
+        let synth = window.speechSynthesis;
+        let speechUtterance = null;
+
+        function playPageAudio() {
+            if (!synth) return;
+            if (synth.paused) {
+                synth.resume();
+                document.getElementById('voice-status').innerText = "സംസാരം തുടരുന്നു...";
+                return;
+            }
+
+            synth.cancel();
+            const contentDiv = document.getElementById('reader-content');
+            const textToRead = contentDiv.innerText || "";
+            if (!textToRead.trim()) return;
+
+            speechUtterance = new SpeechSynthesisUtterance(textToRead);
+            speechUtterance.rate = 0.9;
+            speechUtterance.pitch = 1.1;
+
+            const voices = synth.getVoices();
+            const mlVoice = voices.find(v => v.lang.includes('ml') || v.lang.includes('hi') || v.lang.includes('in'));
+            if (mlVoice) speechUtterance.voice = mlVoice;
+
+            document.getElementById('voice-status').innerText = isTranslatedMode ? "മലയാളം വായിക്കുന്നു..." : "Reading English...";
+            speechUtterance.onend = () => {
+                document.getElementById('voice-status').innerText = "മലയാളം sound";
+            };
+
+            synth.speak(speechUtterance);
+        }
+
+        function pausePageAudio() {
+            if (synth && synth.speaking) {
+                synth.pause();
+                document.getElementById('voice-status').innerText = "താൽക്കാലികമായി നിർത്തി";
+            }
+        }
+
+        function stopPageAudio() {
+            if (synth) {
+                synth.cancel();
+                document.getElementById('voice-status').innerText = "മലയാളം sound";
+            }
+        }
+
+        /* ----------------------------------------------------
+           5. UI NAVIGATION & EVENT BINDINGS
            ---------------------------------------------------- */
         function switchTab(tabId) {
             document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
@@ -604,21 +924,8 @@
                 headerControls.classList.remove('flex');
             }
 
-            if (tabId === 'tab-library') {
-                renderLibraryView();
-            }
-        }
-
-        function showModal(title, desc, progress = 30) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-desc').innerText = desc;
-            document.getElementById('modal-progress').style.width = `${progress}%`;
-            document.getElementById('modal-close-btn').classList.add('hidden');
-            document.getElementById('modal-overlay').classList.remove('hidden');
-        }
-
-        function hideModal() {
-            document.getElementById('modal-overlay').classList.add('hidden');
+            if (tabId === 'tab-library') renderLibraryView();
+            if (tabId === 'tab-downloads') renderDownloadManagerUI();
         }
 
         function renderCatalogView(books = CATALOG) {
@@ -635,9 +942,9 @@
                         <p class="text-xs text-slate-500 dark:text-slate-400 mb-1 font-medium">${b.author}</p>
                         <p class="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-2">${b.desc || ''}</p>
                         <div class="mt-2 flex items-center space-x-2">
-                            <button onclick="downloadAndOpenBook('${b.id}')" class="bg-brand-600 hover:bg-brand-700 text-white text-[11px] px-3 py-1.5 rounded-lg font-bold flex items-center shadow-sm">
-                                <i data-lucide="book-open" class="w-3.5 h-3.5 mr-1"></i>
-                                മുഴുവൻ വായിക്കുക
+                            <button onclick="startBookDownload('${b.id}')" class="bg-brand-600 hover:bg-brand-700 text-white text-[11px] px-3 py-1.5 rounded-lg font-bold flex items-center shadow-sm">
+                                <i data-lucide="download-cloud" class="w-3.5 h-3.5 mr-1"></i>
+                                ഡൗൺലോഡ് ചെയ്യുക
                             </button>
                         </div>
                     </div>
@@ -675,7 +982,7 @@
                             <p class="text-[11px] text-slate-500 dark:text-slate-400">${b.author} • ${b.totalPages || 0} താളുകൾ</p>
                             <div class="mt-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center">
                                 <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
-                                മുഴുവൻ പുസ്തകവും ഓഫ്‌ലൈൻ ആയി ലഭ്യം
+                                ഓഫ്‌ലൈൻ ആയി ലഭ്യം
                             </div>
                         </div>
                     </div>
@@ -693,57 +1000,6 @@
             lucide.createIcons();
         }
 
-        /* ----------------------------------------------------
-           6. FULL BOOK OPEN & PAGINATION ENGINE
-           ---------------------------------------------------- */
-        async function downloadAndOpenBook(bookId) {
-            let bookData = await getBookFromDB(bookId);
-
-            if (!bookData) {
-                const catalogItem = CATALOG.find(c => c.id === bookId);
-                if (!catalogItem) return;
-
-                showModal('സമ്പൂർണ്ണ പുസ്തകം ഡൗൺലോഡ് ചെയ്യുന്നു...', 'Project Gutenberg സെർവറിൽ നിന്നും എല്ലാ പേജുകളും ശേഖരിക്കുന്നു.', 40);
-
-                try {
-                    const rawFullText = await fetchFullBookText(catalogItem.gutenbergId);
-                    document.getElementById('modal-progress').style.width = '80%';
-
-                    const pages = paginateFullText(rawFullText);
-
-                    bookData = {
-                        id: catalogItem.id,
-                        title: catalogItem.title,
-                        author: catalogItem.author,
-                        fullText: rawFullText,
-                        pages: pages,
-                        totalPages: pages.length,
-                        lastReadPage: 0,
-                        cover: catalogItem.cover,
-                        savedAt: Date.now()
-                    };
-
-                    await saveBookToDB(bookData);
-                    document.getElementById('modal-progress').style.width = '100%';
-                    setTimeout(hideModal, 300);
-
-                } catch (err) {
-                    hideModal();
-                    alert(err.message || 'പുസ്തകം ഡൗൺലോഡ് ചെയ്യാൻ സാധിച്ചില്ല.');
-                    return;
-                }
-            }
-
-            loadBookIntoReader(bookData);
-        }
-
-        async function openStoredBook(bookId) {
-            const bookData = await getBookFromDB(bookId);
-            if (bookData) {
-                loadBookIntoReader(bookData);
-            }
-        }
-
         async function removeBook(bookId) {
             if (confirm('ഈ പുസ്തകം ലൈബ്രറിയിൽ നിന്നും നീക്കം ചെയ്യണമെന്നു ഉറപ്പാണോ?')) {
                 await deleteBookFromDB(bookId);
@@ -751,108 +1007,10 @@
             }
         }
 
-        function loadBookIntoReader(bookData) {
-            currentActiveBook = bookData;
-            currentPagesList = bookData.pages || paginateFullText(bookData.fullText || "");
-            currentPageIndex = bookData.lastReadPage || 0;
-            isTranslatedMode = false;
-
-            document.getElementById('reader-book-title').innerText = bookData.title;
-            document.getElementById('total-pages-num').innerText = currentPagesList.length;
-
-            renderPageContent();
-            switchTab('tab-reader');
-        }
-
-        async function renderPageContent() {
-            if (!currentActiveBook || !currentPagesList[currentPageIndex]) return;
-
-            const viewport = document.getElementById('reader-viewport');
-            const contentDiv = document.getElementById('reader-content');
-            document.getElementById('current-page-num').innerText = currentPageIndex + 1;
-
-            const rawEnglishPage = currentPagesList[currentPageIndex];
-            
-            // Toggle translate button state UI
-            const btnText = document.getElementById('translate-btn-text');
-            if (isTranslatedMode) {
-                btnText.innerText = "Original English";
-                contentDiv.innerHTML = `
-                    <div class="flex items-center justify-center py-10 text-brand-600 dark:text-brand-400 font-medium text-xs">
-                        <i data-lucide="loader-2" class="w-5 h-5 animate-spin mr-2"></i>
-                        <span>Mini AI മലയാളത്തിലേക്ക് മാറ്റുന്നു...</span>
-                    </div>
-                `;
-                lucide.createIcons();
-
-                const translatedText = await translateTextToMalayalam(rawEnglishPage, currentActiveBook.id, currentPageIndex);
-                
-                contentDiv.innerHTML = translatedText.split('\n\n').map(p => `<p class="leading-relaxed mb-3 text-justify font-ml">${p}</p>`).join('');
-            } else {
-                btnText.innerText = "മലയാളത്തിലേക്ക് മാറ്റുക";
-                contentDiv.innerHTML = rawEnglishPage.split('\n\n').map(p => `<p class="leading-relaxed mb-3 text-justify">${p}</p>`).join('');
-            }
-
-            viewport.scrollTop = 0;
-
-            // Save reading progress
-            currentActiveBook.lastReadPage = currentPageIndex;
-            saveBookToDB(currentActiveBook);
-
-            // Update Next/Prev Button states
-            document.getElementById('btn-prev-page').disabled = currentPageIndex === 0;
-            document.getElementById('btn-next-page').disabled = currentPageIndex >= currentPagesList.length - 1;
-        }
-
-        /* ----------------------------------------------------
-           7. TEXT TO SPEECH (VOICE ENGINE)
-           ---------------------------------------------------- */
-        let synth = window.speechSynthesis;
-        let speechUtterance = null;
-
-        function playPageAudio() {
-            if (!synth) return;
-            synth.cancel(); // Stop active speech
-
-            const contentDiv = document.getElementById('reader-content');
-            const textToRead = contentDiv.innerText || "";
-
-            if (!textToRead.trim()) return;
-
-            speechUtterance = new SpeechSynthesisUtterance(textToRead);
-            speechUtterance.rate = 0.9; // Slightly slower for clear pronunciation
-
-            // Select Malayalam voice if available
-            const voices = synth.getVoices();
-            const mlVoice = voices.find(v => v.lang.includes('ml') || v.lang.includes('hi') || v.lang.includes('in'));
-            if (mlVoice) {
-                speechUtterance.voice = mlVoice;
-            }
-
-            document.getElementById('voice-status').innerText = isTranslatedMode ? "മലയാളം വായിക്കുന്നു..." : "Reading English...";
-
-            speechUtterance.onend = () => {
-                document.getElementById('voice-status').innerText = "മലയാളം sound";
-            };
-
-            synth.speak(speechUtterance);
-        }
-
-        function stopPageAudio() {
-            if (synth) {
-                synth.cancel();
-                document.getElementById('voice-status').innerText = "മലയാളം sound";
-            }
-        }
-
-        /* ----------------------------------------------------
-           8. FILE UPLOAD & SEARCH HANDLERS
-           ---------------------------------------------------- */
+        // Local TXT File Import Listener
         document.getElementById('file-upload-input').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-
-            showModal('ഫയൽ ലോഡ് ചെയ്യുന്നു...', 'നിങ്ങളുടെ പുസ്തകം വേഗത്തിൽ ക്രമീകരിക്കുന്നു.', 50);
 
             const reader = new FileReader();
             reader.onload = async (evt) => {
@@ -873,35 +1031,15 @@
                 };
 
                 await saveBookToDB(newBook);
-                hideModal();
-                loadBookIntoReader(newBook);
+                openStoredBook(newBook.id);
             };
             reader.readAsText(file);
         });
 
-        // Search Catalog Handler
-        document.getElementById('btn-search').addEventListener('click', performSearch);
-        document.getElementById('search-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') performSearch();
-        });
-
-        function performSearch() {
-            const query = document.getElementById('search-input').value.toLowerCase().trim();
-            if (!query) {
-                renderCatalogView(CATALOG);
-                return;
-            }
-
-            const filtered = CATALOG.filter(b => b.title.toLowerCase().includes(query) || b.author.toLowerCase().includes(query));
-            renderCatalogView(filtered);
-        }
-
-        /* ----------------------------------------------------
-           9. INITIALIZATION & BINDINGS
-           ---------------------------------------------------- */
         window.addEventListener('DOMContentLoaded', async () => {
             await initDB();
             renderCatalogView();
+            renderDownloadManagerUI();
             lucide.createIcons();
 
             // Next / Prev Page Buttons
@@ -934,7 +1072,7 @@
                 switchTab('tab-library');
             });
 
-            // Font Resize
+            // Font Scaling
             document.getElementById('btn-font-inc').addEventListener('click', () => {
                 if (fontSizePx < 28) {
                     fontSizePx += 2;
@@ -969,9 +1107,10 @@
 
             // Voice Controls
             document.getElementById('btn-voice-play').addEventListener('click', playPageAudio);
+            document.getElementById('btn-voice-pause').addEventListener('click', pausePageAudio);
             document.getElementById('btn-voice-stop').addEventListener('click', stopPageAudio);
 
-            // Touch Gesture Swipe Support
+            // Touch Swipe Support
             let touchStartX = 0;
             const viewport = document.getElementById('reader-viewport');
 
@@ -983,14 +1122,12 @@
                 const touchEndX = e.changedTouches[0].screenX;
                 const diff = touchStartX - touchEndX;
 
-                if (Math.abs(diff) > 50) { // Swipe threshold
+                if (Math.abs(diff) > 50) {
                     if (diff > 0 && currentPageIndex < currentPagesList.length - 1) {
-                        // Swipe left -> Next Page
                         currentPageIndex++;
                         stopPageAudio();
                         renderPageContent();
                     } else if (diff < 0 && currentPageIndex > 0) {
-                        // Swipe right -> Prev Page
                         currentPageIndex--;
                         stopPageAudio();
                         renderPageContent();
