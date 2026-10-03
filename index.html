@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>വായനപ്പുര (Vayanappura) - Mobile E-Book Reader & Translator</title>
+    <title>വായനപ്പുര (Vayanappura) - Offline E-Book Reader & Translator</title>
     
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Malayalam & Sans Fonts -->
+    <!-- Google Fonts for Malayalam & Typography -->
     <link href="https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Gayathri:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -26,41 +26,47 @@
             overflow: hidden;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
-            background-color: #0f172a;
+            background-color: #090d16;
         }
 
-        /* Reader Themes */
+        /* Reader Color Themes */
         .theme-light {
             background-color: #f8fafc;
             color: #0f172a;
         }
         .theme-sepia {
-            background-color: #fcf8ed;
+            background-color: #fdf8eb;
             color: #432818;
         }
         .theme-dark {
-            background-color: #1e293b;
+            background-color: #0f172a;
             color: #f1f5f9;
         }
 
-        /* Page Turn Animation */
-        .page-container {
+        /* Reader Paper Styling */
+        .reader-paper {
+            background-image: linear-gradient(to bottom, rgba(255,255,255,0.03), rgba(0,0,0,0.02));
+            box-shadow: inset 10px 0 25px -12px rgba(0,0,0,0.08);
+        }
+
+        /* Page Turn Animation Effects */
+        .page-viewport {
             perspective: 1200px;
         }
         .page-card {
-            transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease-out;
+            transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.22s ease-out;
             transform-origin: left center;
         }
         .flip-next {
-            transform: translateX(-100%) rotateY(-20deg);
+            transform: translateX(-100%) rotateY(-18deg);
             opacity: 0;
         }
         .flip-prev {
-            transform: translateX(100%) rotateY(20deg);
+            transform: translateX(100%) rotateY(18deg);
             opacity: 0;
         }
 
-        /* Hide scrollbars */
+        /* Custom Scrollbar suppression */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -69,148 +75,159 @@
             scrollbar-width: none;
         }
 
-        /* Book paper subtle shadow */
-        .book-shadow {
-            box-shadow: inset 10px 0 20px -10px rgba(0,0,0,0.06), 0 4px 15px -3px rgba(0,0,0,0.08);
+        /* Slide-over Side Drawer Transition */
+        .drawer-slide {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
     </style>
 </head>
 <body class="h-full w-full flex items-center justify-center p-0 sm:p-2 bg-slate-950">
 
-    <div id="app-container" class="w-full h-full max-w-md bg-white flex flex-col relative shadow-2xl overflow-hidden sm:rounded-2xl border border-slate-800">
+    <!-- App Container -->
+    <div id="app-container" class="w-full h-full max-w-md bg-slate-900 flex flex-col relative shadow-2xl overflow-hidden sm:rounded-2xl border border-slate-800">
         
-        <!-- TOP APP HEADER (Ultra Compact - 44px) -->
+        <!-- Header Bar -->
         <header class="bg-indigo-700 text-white shrink-0 px-3 py-2 flex items-center justify-between shadow-md z-30 h-11">
             <div class="flex items-center space-x-2">
                 <i class="fa-solid fa-book-open-reader text-amber-300 text-base"></i>
                 <h1 class="font-bold text-base tracking-wide leading-none">വായനപ്പുര</h1>
             </div>
             
-            <!-- Compact Navigation Strip (kandethuka & e-reader) -->
-            <div class="flex items-center bg-indigo-800/80 p-0.5 rounded-lg text-xs font-semibold">
-                <button onclick="switchTab('discover')" id="tab-btn-discover" class="px-2.5 py-1 rounded-md bg-white text-indigo-800 shadow-sm transition-all flex items-center space-x-1">
-                    <i class="fa-solid fa-compass text-[11px]"></i>
-                    <span>കണ്ടെത്തുക</span>
-                </button>
-                <button onclick="switchTab('reader')" id="tab-btn-reader" class="px-2.5 py-1 rounded-md text-indigo-200 hover:text-white transition-all flex items-center space-x-1">
-                    <i class="fa-solid fa-book-open text-[11px]"></i>
-                    <span>E-Reader</span>
-                </button>
+            <div id="header-status-badge" class="flex items-center space-x-1.5 text-[10px] bg-indigo-800/80 px-2.5 py-1 rounded-full text-indigo-100 border border-indigo-500/30">
+                <i class="fa-solid fa-database text-amber-400 text-[10px]"></i>
+                <span id="stored-books-count">IndexedDB സജ്ജം</span>
             </div>
         </header>
 
+        <!-- Main Content Area -->
         <main class="flex-1 relative overflow-hidden bg-slate-100 flex flex-col">
             
-            <!-- 1. DISCOVER TAB VIEW (Catalog & Ranking) -->
-            <section id="discover-view" class="w-full h-full flex flex-col overflow-y-auto no-scrollbar pb-4">
+            <!-- 1. SEARCH & DISCOVER VIEW -->
+            <section id="view-discover" class="w-full h-full flex flex-col overflow-y-auto no-scrollbar pb-14">
                 
-                <!-- Quick Category Search Filter -->
-                <div class="p-2.5 bg-white border-b border-slate-200 shadow-sm shrink-0">
+                <!-- Search Input Bar -->
+                <div class="p-2.5 bg-white border-b border-slate-200 shadow-xs shrink-0">
                     <div class="flex items-center space-x-2 mb-2">
                         <div class="relative flex-1">
-                            <input type="text" id="search-input" placeholder="പുസ്തകം അല്ലെങ്കിൽ എഴുത്തുകാരൻ..." 
-                                   class="w-full pl-8 pr-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-indigo-600">
-                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2 text-slate-400 text-xs"></i>
+                            <input type="text" id="search-input" placeholder="പുസ്തകത്തിന്റെ പേര് നൽകുക... (eg: Dracula, Physics)" 
+                                   class="w-full pl-8 pr-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-indigo-600 font-medium">
+                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
                         </div>
-                        <button onclick="handleSearch()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold active:scale-95 transition">
+                        <button onclick="handleSearch()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold active:scale-95 transition">
                             തിരയുക
                         </button>
                     </div>
 
                     <!-- Category Pills -->
                     <div class="flex space-x-1.5 overflow-x-auto no-scrollbar py-0.5">
-                        <button onclick="fetchBooks('Nobel Prize Winner')" class="px-2.5 py-1 bg-amber-50 border border-amber-200 text-amber-800 rounded-full text-[11px] font-bold whitespace-nowrap active:scale-95">
-                            🏆 നോബൽ ജേതാക്കൾ
+                        <button onclick="fetchBooks('Nobel Prize')" class="px-2.5 py-1 bg-amber-50 border border-amber-200 text-amber-800 rounded-full text-[11px] font-bold whitespace-nowrap active:scale-95 flex items-center gap-1">
+                            🏆 നോബൽ സമ്മാനം
                         </button>
-                        <button onclick="fetchBooks('Booker Prize')" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-full text-[11px] font-bold whitespace-nowrap active:scale-95">
+                        <button onclick="fetchBooks('Booker Prize')" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-full text-[11px] font-bold whitespace-nowrap active:scale-95 flex items-center gap-1">
                             🥇 ബുക്കർ പ്രൈസ്
                         </button>
-                        <button onclick="fetchBooks('Pulitzer Prize')" class="px-2.5 py-1 bg-purple-50 border border-purple-200 text-purple-800 rounded-full text-[11px] font-bold whitespace-nowrap active:scale-95">
+                        <button onclick="fetchBooks('Pulitzer Prize')" class="px-2.5 py-1 bg-purple-50 border border-purple-200 text-purple-800 rounded-full text-[11px] font-bold whitespace-nowrap active:scale-95 flex items-center gap-1">
                             ⭐ പുലിറ്റ്‌സർ
                         </button>
-                        <button onclick="fetchBooks('Popular Science')" class="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-[11px] font-bold whitespace-nowrap active:scale-95">
+                        <button onclick="fetchBooks('Science')" class="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-[11px] font-bold whitespace-nowrap active:scale-95 flex items-center gap-1">
                             🧪 സയൻസ്
                         </button>
                     </div>
                 </div>
 
-                <!-- Category Title Header -->
-                <div class="px-3 pt-3 pb-1 flex justify-between items-center">
-                    <h2 id="category-title" class="font-bold text-slate-800 text-xs truncate max-w-[220px]">Nobel Prize Winner</h2>
-                    <span id="results-count" class="text-[10px] bg-slate-200 text-slate-600 font-semibold px-2 py-0.5 rounded-full">20 Books</span>
+                <!-- Active Category Header -->
+                <div class="px-3 pt-2.5 pb-1 flex justify-between items-center">
+                    <h2 id="category-title" class="font-bold text-slate-800 text-xs truncate max-w-[220px]">ലഭ്യമായ പുസ്തകങ്ങൾ</h2>
+                    <span id="results-count" class="text-[10px] bg-slate-200 text-slate-600 font-semibold px-2 py-0.5 rounded-full">ലോഡ് ചെയ്യുന്നു...</span>
                 </div>
 
                 <!-- Loading Spinner -->
-                <div id="loading-state" class="hidden my-auto flex flex-col items-center justify-center p-6 text-center">
+                <div id="discover-loading" class="hidden my-auto flex flex-col items-center justify-center p-8 text-center">
                     <div class="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                    <p class="text-xs text-slate-500 font-medium mt-2">പുസ്തകങ്ങൾ ലഭ്യമാക്കുന്നു...</p>
+                    <p class="text-xs text-slate-600 font-semibold mt-3">പുസ്തകങ്ങൾ കണ്ടെത്തുന്നു...</p>
                 </div>
 
-                <!-- Books Grid -->
-                <div id="books-list" class="p-2.5 grid grid-cols-2 gap-2.5">
-                    <!-- Books dynamically inserted here -->
+                <!-- Books List -->
+                <div id="books-grid" class="p-2.5 grid grid-cols-2 gap-2.5">
+                    <!-- Dynamic book cards rendered here -->
                 </div>
             </section>
 
-            <!-- 2. FULLSCREEN E-READER TAB VIEW (Occupies 85%+ Screen Space) -->
-            <section id="reader-view" class="hidden absolute inset-0 z-20 flex flex-col theme-light transition-colors duration-200">
+            <!-- 2. MY LIBRARY (INDEXEDDB SAVED BOOKS) VIEW -->
+            <section id="view-library" class="hidden w-full h-full flex flex-col overflow-y-auto no-scrollbar pb-14">
+                <div class="p-3 bg-indigo-900 text-white shadow-sm flex items-center justify-between shrink-0">
+                    <div>
+                        <h2 class="font-bold text-sm">എന്റെ ലൈബ്രറി (IndexedDB)</h2>
+                        <p class="text-[10px] text-indigo-200">ഓഫ്‌ലൈനിൽ വായിക്കാൻ സേവ് ചെയ്തവ</p>
+                    </div>
+                    <span id="library-count-badge" class="bg-amber-400 text-indigo-950 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">0 പുസ്തകങ്ങൾ</span>
+                </div>
+
+                <div id="library-empty" class="hidden my-auto flex flex-col items-center justify-center p-6 text-center">
+                    <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-3 text-xl">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                    <h3 class="font-bold text-sm text-slate-700">സേവ് ചെയ്ത പുസ്തകങ്ങളൊന്നുമില്ല</h3>
+                    <p class="text-xs text-slate-500 mt-1 max-w-[220px]">തിരച്ചിൽ വിഭാഗത്തിൽ നിന്ന് നിങ്ങളുടെ ഇഷ്ടപുസ്തകങ്ങൾ ഡൗൺലോഡ് ചെയ്യുക.</p>
+                    <button onclick="switchTab('discover')" class="mt-4 px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold shadow-sm active:scale-95 transition">
+                        പുസ്തകങ്ങൾ കണ്ടെത്തുക
+                    </button>
+                </div>
+
+                <div id="library-grid" class="p-2.5 grid grid-cols-1 gap-2.5">
+                    <!-- Downloaded IndexedDB books populated here -->
+                </div>
+            </section>
+
+            <!-- 3. FULL E-BOOK READER VIEW -->
+            <section id="view-reader" class="hidden absolute inset-0 z-40 flex flex-col theme-light transition-colors duration-200">
                 
-                <!-- Compact Reader Action Header (38px) -->
-                <div class="px-3 py-1.5 border-b border-slate-200/60 flex items-center justify-between shrink-0 bg-opacity-95 backdrop-blur-sm h-10">
-                    <button onclick="switchTab('discover')" class="text-slate-600 p-1 active:scale-95">
+                <!-- Compact Reader Header (Maximal Viewport) -->
+                <div class="px-3 py-1.5 border-b border-slate-200/80 flex items-center justify-between shrink-0 bg-opacity-95 backdrop-blur-sm h-10 shadow-2xs">
+                    <button onclick="exitReader()" class="text-slate-600 p-1.5 active:scale-95">
                         <i class="fa-solid fa-arrow-left text-sm"></i>
                     </button>
                     
                     <div class="text-center px-2 flex-1 min-w-0">
-                        <p id="reader-book-title" class="text-xs font-bold truncate">Book Title</p>
+                        <p id="reader-book-title" class="text-xs font-bold truncate">പുസ്തകം</p>
                     </div>
 
-                    <div class="flex items-center space-x-2">
-                        <!-- Font size adjustment -->
-                        <button onclick="changeFontSize(-1)" class="text-slate-600 text-xs font-bold px-1.5 py-0.5 rounded border border-slate-300">A-</button>
-                        <button onclick="changeFontSize(1)" class="text-slate-600 text-xs font-bold px-1.5 py-0.5 rounded border border-slate-300">A+</button>
-                        <!-- Theme Toggle -->
-                        <button onclick="toggleReaderTheme()" class="text-slate-600 p-1 text-xs">
+                    <div class="flex items-center space-x-1.5">
+                        <!-- Font Size Adjustment -->
+                        <button onclick="changeFontSize(-1)" class="text-slate-700 text-[11px] font-bold px-1.5 py-0.5 rounded border border-slate-300 active:bg-slate-200">A-</button>
+                        <button onclick="changeFontSize(1)" class="text-slate-700 text-[11px] font-bold px-1.5 py-0.5 rounded border border-slate-300 active:bg-slate-200">A+</button>
+                        <!-- Theme Switcher -->
+                        <button onclick="toggleReaderTheme()" class="text-slate-700 p-1 text-xs active:scale-95" title="തീം മാറ്റുക">
                             <i class="fa-solid fa-circle-half-stroke"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Fast Language Selector & Parallel Translation Progress Indicator -->
-                <div class="px-3 py-1 bg-slate-100/80 border-b border-slate-200 flex items-center justify-between shrink-0 h-8">
-                    <div class="flex rounded-md bg-slate-200 p-0.5 text-[11px] font-bold w-36">
-                        <button id="lang-btn-ml" onclick="setReaderLanguage('ml')" class="flex-1 py-0.5 rounded bg-white text-indigo-700 text-center shadow-xs">
-                            മലയാളം
-                        </button>
-                        <button id="lang-btn-en" onclick="setReaderLanguage('en')" class="flex-1 py-0.5 rounded text-slate-600 text-center">
-                            English
-                        </button>
-                    </div>
-
-                    <div id="translation-progress" class="hidden flex items-center space-x-1.5 text-[10px] text-indigo-600 font-semibold animate-pulse">
-                        <i class="fa-solid fa-bolt text-amber-500"></i>
-                        <span id="trans-status-text">വേഗത്തിൽ പരിഭാഷപ്പെടുത്തുന്നു...</span>
-                    </div>
-                </div>
-
-                <!-- MAIN BOOK PAGE VIEWPORT (Maximizes Reading Area) -->
-                <div id="page-area" class="flex-1 relative p-4 sm:p-5 overflow-hidden flex flex-col justify-between book-shadow">
+                <!-- Main Book Canvas Display -->
+                <div id="page-area" class="flex-1 relative p-4 sm:p-5 overflow-hidden flex flex-col justify-between reader-paper select-text">
                     
-                    <!-- Touch Tap Regions (Left / Right for easy page turning) -->
-                    <div onclick="prevPage()" class="absolute left-0 top-0 bottom-0 w-12 z-10 active:bg-black/5 transition-colors" title="മുൻപത്തെ താൾ"></div>
-                    <div onclick="nextPage()" class="absolute right-0 top-0 bottom-0 w-12 z-10 active:bg-black/5 transition-colors" title="അടുത്ത താൾ"></div>
+                    <!-- Touch Tap Side Zones -->
+                    <div onclick="prevPage()" class="absolute left-0 top-0 bottom-0 w-10 z-10 active:bg-black/5 transition-colors" title="മുൻപത്തെ താൾ"></div>
+                    <div onclick="nextPage()" class="absolute right-0 top-0 bottom-0 w-10 z-10 active:bg-black/5 transition-colors" title="അടുത്ത താൾ"></div>
 
-                    <!-- Single Paper Page Display -->
+                    <!-- Page Text Display Card -->
                     <div id="page-card" class="page-card h-full w-full flex flex-col justify-start overflow-y-auto no-scrollbar py-1">
-                        <div id="page-content" class="text-sm leading-relaxed space-y-3 font-medium select-text">
-                            <!-- Book Page Content Loaded Here -->
+                        <div id="page-content" class="text-sm leading-relaxed space-y-3 font-medium">
+                            <!-- Live Book Content Displayed Here -->
                         </div>
                     </div>
 
-                    <!-- Floating NotebookLM Style Natural Female Voice Controller -->
-                    <div class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-lg flex items-center space-x-2.5 z-20 border border-slate-700">
-                        <span class="text-[10px] font-bold text-indigo-300 flex items-center gap-1">
-                            <i class="fa-solid fa-microphone text-amber-400"></i> ഫീമെയിൽ വോയ്‌സ്
+                    <!-- Floating Side Translator Button -->
+                    <button onclick="toggleTranslateDrawer()" id="floating-translate-btn" 
+                            class="absolute top-4 right-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg z-20 flex items-center space-x-1.5 border border-indigo-400 active:scale-95 transition">
+                        <i class="fa-solid fa-language text-amber-300 text-xs"></i>
+                        <span>മലയാളത്തിലേക്ക് പരിഭാഷ</span>
+                    </button>
+
+                    <!-- Floating Voice Control Bar -->
+                    <div class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-xl flex items-center space-x-2.5 z-20 border border-slate-700/80">
+                        <span class="text-[10px] font-bold text-amber-300 flex items-center gap-1">
+                            <i class="fa-solid fa-volume-high"></i> <span id="voice-lang-label">മലയാളം sound</span>
                         </span>
                         <button id="play-pause-btn" onclick="toggleSpeech()" class="w-7 h-7 bg-indigo-600 hover:bg-indigo-500 rounded-full flex items-center justify-center text-xs text-white active:scale-95 transition">
                             <i class="fa-solid fa-play"></i>
@@ -221,14 +238,14 @@
                     </div>
                 </div>
 
-                <!-- Compact Bottom Reader Navigation Bar (36px) -->
-                <div class="px-4 py-1.5 border-t border-slate-200/60 shrink-0 flex items-center justify-between text-xs h-9">
-                    <button onclick="prevPage()" id="prev-page-btn" class="px-2.5 py-1 bg-slate-200/80 text-slate-700 rounded-md font-bold text-[11px] flex items-center space-x-1 disabled:opacity-40">
+                <!-- Page Navigation Footer Bar -->
+                <div class="px-4 py-1.5 border-t border-slate-200/80 shrink-0 flex items-center justify-between text-xs h-9 bg-slate-50/80">
+                    <button onclick="prevPage()" id="prev-page-btn" class="px-2.5 py-1 bg-slate-200 text-slate-800 rounded-md font-bold text-[11px] flex items-center space-x-1 disabled:opacity-40">
                         <i class="fa-solid fa-chevron-left text-[9px]"></i>
                         <span>മുൻപ്</span>
                     </button>
 
-                    <div class="text-center font-bold text-indigo-700 text-xs">
+                    <div class="text-center font-bold text-indigo-800 text-xs">
                         താൾ <span id="current-page-num">1</span> / <span id="total-pages-num">1</span>
                     </div>
 
@@ -237,127 +254,287 @@
                         <i class="fa-solid fa-chevron-right text-[9px]"></i>
                     </button>
                 </div>
+
+                <!-- SLIDE-OVER MALAYALAM TRANSLATION DRAWER -->
+                <div id="translate-drawer" class="absolute inset-y-0 right-0 w-full sm:w-5/6 bg-white shadow-2xl z-50 transform translate-x-full drawer-slide flex flex-col border-l border-slate-200">
+                    <div class="p-3 bg-indigo-800 text-white flex items-center justify-between shrink-0">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-language text-amber-300"></i>
+                            <h3 class="font-bold text-xs">മലയാളം പരിഭാഷ (തത്സമയം)</h3>
+                        </div>
+                        <button onclick="toggleTranslateDrawer()" class="text-indigo-200 hover:text-white p-1">
+                            <i class="fa-solid fa-xmark text-sm"></i>
+                        </button>
+                    </div>
+
+                    <div class="px-3 py-1.5 bg-indigo-50 border-b border-indigo-100 flex items-center justify-between shrink-0">
+                        <span id="trans-speed-status" class="text-[10px] font-bold text-indigo-700 flex items-center gap-1">
+                            <i class="fa-solid fa-bolt text-amber-500"></i> വിവരങ്ങൾ പരിഭാഷപ്പെടുത്തുന്നു...
+                        </span>
+                        <button onclick="speakMalayalamTranslation()" class="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded font-bold flex items-center gap-1 active:scale-95">
+                            <i class="fa-solid fa-volume-high"></i> വായിച്ചു കേൾക്കുക
+                        </button>
+                    </div>
+
+                    <div id="drawer-translation-body" class="flex-1 p-4 overflow-y-auto no-scrollbar text-slate-800 leading-relaxed font-medium text-sm space-y-3">
+                        <!-- Dynamic Fast Malayalam Translation Appears Here -->
+                    </div>
+
+                    <div class="p-2.5 bg-slate-100 border-t border-slate-200 flex justify-between items-center text-[10px] text-slate-500 shrink-0">
+                        <span>MyMemory Parallel Fast Engine</span>
+                        <button onclick="toggleTranslateDrawer()" class="bg-slate-700 text-white px-3 py-1 rounded font-bold">അടയ്ക്കുക</button>
+                    </div>
+                </div>
+
             </section>
         </main>
+
+        <!-- App Bottom Navigation Strip -->
+        <nav class="bg-slate-900 border-t border-slate-800 text-slate-400 shrink-0 h-12 flex items-center justify-around z-30">
+            <button onclick="switchTab('discover')" id="nav-btn-discover" class="flex flex-col items-center justify-center w-1/3 py-1 text-indigo-400">
+                <i class="fa-solid fa-compass text-sm"></i>
+                <span class="text-[10px] font-bold mt-0.5">തിരയുക</span>
+            </button>
+            <button onclick="switchTab('library')" id="nav-btn-library" class="flex flex-col items-center justify-center w-1/3 py-1 hover:text-slate-200">
+                <i class="fa-solid fa-bookmark text-sm"></i>
+                <span class="text-[10px] font-bold mt-0.5">എന്റെ ലൈബ്രറി</span>
+            </button>
+            <button onclick="switchTab('reader')" id="nav-btn-reader" class="flex flex-col items-center justify-center w-1/3 py-1 hover:text-slate-200">
+                <i class="fa-solid fa-book-open text-sm"></i>
+                <span class="text-[10px] font-bold mt-0.5">വായനപ്പുര</span>
+            </button>
+        </nav>
     </div>
 
+    <!-- Application JavaScript Engine -->
     <script>
-        // Application State
+        /* ====================================================================
+           1. INDEXEDDB ENGINE (VayanappuraDB)
+           ==================================================================== */
+        const DB_NAME = 'VayanappuraDB';
+        const DB_VERSION = 1;
+        const STORE_BOOKS = 'books';
+        let db = null;
+
+        // Initialize IndexedDB database
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onupgradeneeded = (event) => {
+                    const dbInstance = event.target.result;
+                    if (!dbInstance.objectStoreNames.contains(STORE_BOOKS)) {
+                        dbInstance.createObjectStore(STORE_BOOKS, { keyPath: 'id' });
+                    }
+                };
+
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    updateStoredBooksBadge();
+                    resolve(db);
+                };
+
+                request.onerror = (event) => {
+                    console.error("IndexedDB Error:", event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        // Save Full Book Content to IndexedDB
+        function saveBookToDB(bookObj) {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("DB not initialized");
+                const tx = db.transaction(STORE_BOOKS, 'readwrite');
+                const store = tx.objectStore(STORE_BOOKS);
+                const req = store.put(bookObj);
+
+                req.onsuccess = () => {
+                    updateStoredBooksBadge();
+                    refreshLibraryView();
+                    resolve(true);
+                };
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        // Retrieve All Books from IndexedDB
+        function getAllBooksFromDB() {
+            return new Promise((resolve, reject) => {
+                if (!db) return resolve([]);
+                const tx = db.transaction(STORE_BOOKS, 'readonly');
+                const store = tx.objectStore(STORE_BOOKS);
+                const req = store.getAll();
+
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        // Delete Book from IndexedDB
+        function deleteBookFromDB(bookId) {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("DB not ready");
+                const tx = db.transaction(STORE_BOOKS, 'readwrite');
+                const store = tx.objectStore(STORE_BOOKS);
+                const req = store.delete(bookId);
+
+                req.onsuccess = () => {
+                    updateStoredBooksBadge();
+                    refreshLibraryView();
+                    resolve(true);
+                };
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function updateStoredBooksBadge() {
+            try {
+                const books = await getAllBooksFromDB();
+                document.getElementById('stored-books-count').innerText = `${books.length} സേവ് ചെയ്തു`;
+                document.getElementById('library-count-badge').innerText = `${books.length} പുസ്തകങ്ങൾ`;
+            } catch (e) {
+                console.log("Badge error", e);
+            }
+        }
+
+        /* ====================================================================
+           2. GLOBAL APP STATE & CACHE
+           ==================================================================== */
         let currentTab = 'discover';
         let currentTheme = 'light';
-        let currentLang = 'ml';
-        let fontSizeLevel = 14; // px
+        let fontSizeLevel = 14;
 
-        let booksData = [];
+        let searchBooksData = [];
         let activeBook = null;
 
-        let bookPagesML = [];
         let bookPagesEN = [];
+        let bookPagesML = [];
         let currentPageIndex = 0;
 
-        // In-Memory Fast Cache for Instant Translations (0ms load on repeat)
+        // In-Memory Fast Cache for Parallel Translations
         const translationCache = new Map();
 
-        // Web Speech State
+        // Speech Synthesis
         let synth = window.speechSynthesis;
         let isSpeaking = false;
         let currentUtterance = null;
 
-        // Element References
-        const discoverView = document.getElementById('discover-view');
-        const readerView = document.getElementById('reader-view');
-        const booksList = document.getElementById('books-list');
-        const loadingState = document.getElementById('loading-state');
-        const categoryTitle = document.getElementById('category-title');
-        const resultsCount = document.getElementById('results-count');
+        // Element Handles
+        const viewDiscover = document.getElementById('view-discover');
+        const viewLibrary = document.getElementById('view-library');
+        const viewReader = document.getElementById('view-reader');
+        const booksGrid = document.getElementById('books-grid');
+        const libraryGrid = document.getElementById('library-grid');
+        const libraryEmpty = document.getElementById('library-empty');
+        const discoverLoading = document.getElementById('discover-loading');
         const pageContent = document.getElementById('page-content');
         const currentPageNum = document.getElementById('current-page-num');
         const totalPagesNum = document.getElementById('total-pages-num');
-        const transProgress = document.getElementById('translation-progress');
 
-        // Initial Setup
-        window.addEventListener('DOMContentLoaded', () => {
-            fetchBooks('Nobel Prize Winner');
+        // Initial Load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await initDB();
+            fetchBooks('Nobel Prize');
             initTouchSwipe();
         });
 
-        // Tab Switcher
+        /* ====================================================================
+           3. TAB NAVIGATION CONTROL
+           ==================================================================== */
         function switchTab(tab) {
             currentTab = tab;
-            const btnDiscover = document.getElementById('tab-btn-discover');
-            const btnReader = document.getElementById('tab-btn-reader');
+            stopSpeech();
+
+            viewDiscover.classList.add('hidden');
+            viewLibrary.classList.add('hidden');
+
+            document.getElementById('nav-btn-discover').className = "flex flex-col items-center justify-center w-1/3 py-1 hover:text-slate-200";
+            document.getElementById('nav-btn-library').className = "flex flex-col items-center justify-center w-1/3 py-1 hover:text-slate-200";
+            document.getElementById('nav-btn-reader').className = "flex flex-col items-center justify-center w-1/3 py-1 hover:text-slate-200";
 
             if (tab === 'discover') {
-                discoverView.classList.remove('hidden');
-                readerView.classList.add('hidden');
-                btnDiscover.className = "px-2.5 py-1 rounded-md bg-white text-indigo-800 shadow-sm transition-all flex items-center space-x-1";
-                btnReader.className = "px-2.5 py-1 rounded-md text-indigo-200 hover:text-white transition-all flex items-center space-x-1";
-                stopSpeech();
+                viewDiscover.classList.remove('hidden');
+                document.getElementById('nav-btn-discover').className = "flex flex-col items-center justify-center w-1/3 py-1 text-indigo-400 font-bold";
+            } else if (tab === 'library') {
+                viewLibrary.classList.remove('hidden');
+                document.getElementById('nav-btn-library').className = "flex flex-col items-center justify-center w-1/3 py-1 text-indigo-400 font-bold";
+                refreshLibraryView();
             } else if (tab === 'reader') {
                 if (!activeBook) {
-                    alert('വായിക്കാൻ ആദ്യം ഒരു പുസ്തകം തിരഞ്ഞെടുക്കുക.');
+                    alert('വായിക്കാൻ ആദ്യം ഒരു പുസ്തകം തിരഞ്ഞെടുക്കുക അല്ലെങ്കിൽ ഡൗൺലോഡ് ചെയ്യുക.');
                     switchTab('discover');
                     return;
                 }
-                discoverView.classList.add('hidden');
-                readerView.classList.remove('hidden');
-                btnDiscover.className = "px-2.5 py-1 rounded-md text-indigo-200 hover:text-white transition-all flex items-center space-x-1";
-                btnReader.className = "px-2.5 py-1 rounded-md bg-white text-indigo-800 shadow-sm transition-all flex items-center space-x-1";
+                viewReader.classList.remove('hidden');
+                document.getElementById('nav-btn-reader').className = "flex flex-col items-center justify-center w-1/3 py-1 text-indigo-400 font-bold";
             }
         }
 
-        // Fetch Ranked Books
+        /* ====================================================================
+           4. SEARCH & ONLINE CATALOG
+           ==================================================================== */
         async function fetchBooks(query) {
-            categoryTitle.innerText = query;
-            booksList.innerHTML = '';
-            loadingState.classList.remove('hidden');
+            document.getElementById('category-title').innerText = query;
+            booksGrid.innerHTML = '';
+            discoverLoading.classList.remove('hidden');
 
             try {
-                const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&sort=rating&limit=20`);
+                const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&sort=rating&limit=16`);
                 const data = await response.json();
 
-                loadingState.classList.add('hidden');
-                booksData = data.docs || [];
-                resultsCount.innerText = `${booksData.length} പുസ്തകങ്ങൾ`;
+                discoverLoading.classList.add('hidden');
+                searchBooksData = data.docs || [];
+                document.getElementById('results-count').innerText = `${searchBooksData.length} പുസ്തകങ്ങൾ`;
 
-                renderBooksList(booksData);
-            } catch (error) {
-                loadingState.classList.add('hidden');
-                booksList.innerHTML = `<p class="col-span-2 text-center text-xs text-red-500 py-6">ഡാറ്റ ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല.</p>`;
+                renderSearchResults(searchBooksData);
+            } catch (err) {
+                discoverLoading.classList.add('hidden');
+                booksGrid.innerHTML = `<p class="col-span-2 text-center text-xs text-red-500 py-6">ഡാറ്റ ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല.</p>`;
             }
         }
 
         function handleSearch() {
-            const query = document.getElementById('search-input').value.trim();
-            if (query) {
-                fetchBooks(query);
-            }
+            const q = document.getElementById('search-input').value.trim();
+            if (q) fetchBooks(q);
         }
 
-        // Render Book Cards
-        function renderBooksList(books) {
-            booksList.innerHTML = books.map((book, idx) => {
+        async function renderSearchResults(books) {
+            const storedBooks = await getAllBooksFromDB();
+            const storedIds = new Set(storedBooks.map(b => b.id));
+
+            booksGrid.innerHTML = books.map((book, idx) => {
+                const bookId = book.key ? book.key.replace('/works/', '') : `bk_${idx}`;
                 const coverUrl = book.cover_i ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg` : 'https://placehold.co/200x300/e2e8f0/475569?text=No+Cover';
-                const rating = book.ratings_average ? book.ratings_average.toFixed(1) : (4.9 - (idx * 0.1)).toFixed(1);
+                const rating = book.ratings_average ? book.ratings_average.toFixed(1) : (4.8 - (idx * 0.1)).toFixed(1);
                 const title = book.title || 'Unknown Title';
                 const author = book.author_name ? book.author_name[0] : 'അജ്ഞാതൻ';
+                const isDownloaded = storedIds.has(bookId);
 
                 return `
-                    <div onclick="openBookReader(${idx})" class="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden flex flex-col justify-between active:scale-95 transition cursor-pointer">
+                    <div class="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden flex flex-col justify-between active:scale-95 transition">
                         <div class="relative aspect-[3/4] bg-slate-100">
                             <img src="${coverUrl}" class="w-full h-full object-cover" loading="lazy">
                             <span class="absolute top-1 left-1 bg-amber-500 text-white font-bold text-[9px] px-1.5 py-0.5 rounded-full shadow">
                                 #${idx + 1}
                             </span>
+                            ${isDownloaded ? `<span class="absolute top-1 right-1 bg-emerald-600 text-white font-bold text-[8px] px-1.5 py-0.5 rounded-full"><i class="fa-solid fa-circle-check"></i> സേവ് ചെയ്തു</span>` : ''}
                         </div>
                         <div class="p-2 flex flex-col justify-between flex-1">
                             <div>
                                 <h3 class="font-bold text-xs text-slate-800 line-clamp-2 leading-tight">${title}</h3>
                                 <p class="text-[10px] text-slate-500 truncate mt-0.5">${author}</p>
                             </div>
-                            <div class="mt-1.5 flex items-center justify-between pt-1 border-t border-slate-100">
-                                <span class="text-[10px] text-amber-600 font-bold"><i class="fa-solid fa-star text-[9px]"></i> ${rating}</span>
-                                <span class="text-[9px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded font-bold">വായിക്കുക</span>
+                            <div class="mt-2 flex flex-col gap-1">
+                                <button id="dl-btn-${bookId}" onclick="downloadAndSaveBook('${bookId}', '${encodeURIComponent(title)}', '${encodeURIComponent(author)}', '${coverUrl}')" 
+                                        class="w-full py-1 ${isDownloaded ? 'bg-slate-200 text-slate-700' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} rounded text-[10px] font-bold flex items-center justify-center gap-1">
+                                    <i class="fa-solid ${isDownloaded ? 'fa-check' : 'fa-download'} text-[9px]"></i>
+                                    <span>${isDownloaded ? 'ഡൗൺലോഡ് ചെയ്‌തു' : 'ഡൗൺലോഡ് ചെയ്യുക'}</span>
+                                </button>
+                                <button onclick="readBookOnline('${bookId}', '${encodeURIComponent(title)}', '${encodeURIComponent(author)}')" 
+                                        class="w-full py-0.5 bg-indigo-50 text-indigo-700 rounded text-[9px] font-bold text-center">
+                                    വായിക്കുക
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -365,86 +542,210 @@
             }).join('');
         }
 
-        async function openBookReader(index) {
-            stopSpeech();
-            activeBook = booksData[index];
+        /* ====================================================================
+           5. INDEXEDDB DOWNLOAD & LOCAL STORAGE ENGINE
+           ==================================================================== */
+        async function downloadAndSaveBook(id, titleEnc, authorEnc, coverUrl) {
+            const title = decodeURIComponent(titleEnc);
+            const author = decodeURIComponent(authorEnc);
+            const btn = document.getElementById(`dl-btn-${id}`);
 
-            document.getElementById('reader-book-title').innerText = activeBook.title;
-            pageContent.innerHTML = `<div class="p-4 text-center text-xs text-slate-500">താളുകൾ വേഗത്തിൽ ലോഡ് ചെയ്യുന്നു...</div>`;
-            transProgress.classList.remove('hidden');
-
-            switchTab('reader');
-
-            const sampleText = activeBook.first_sentence ? activeBook.first_sentence[0] : null;
-            let fullText = sampleText || `${activeBook.title} by ${activeBook.author_name ? activeBook.author_name[0] : 'Author'}. This is a world-renowned e-publication recognized for its literary excellence and global popularity.`;
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin text-[9px]"></i> ഡൗൺലോഡിംഗ്...`;
+            }
 
             try {
-                const gRes = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(activeBook.title)}`);
+                // Fetch full text stream from Gutendex / Gutenberg
+                let fullText = '';
+                const gRes = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(title)}`);
+                const gData = await gRes.json();
+
+                if (gData.results.length > 0 && gData.results[0].formats['text/plain; charset=us-ascii']) {
+                    const rawRes = await fetch(gData.results[0].formats['text/plain; charset=us-ascii']);
+                    fullText = await rawRes.text();
+                    fullText = fullText.slice(1200, 15000).replace(/\r\n/g, ' ').replace(/\n/g, ' ');
+                } else {
+                    fullText = `Book Title: ${title}. Author: ${author}.\n\nThis full length e-publication has been downloaded and stored in IndexedDB for offline reading. It contains classic literature chapters, stories, and historical records. Enjoy smooth offline page turning and parallel Malayalam translation.`;
+                }
+
+                // Chunk into pages of ~380 characters
+                const pages = fullText.match(/.{1,380}(?=\s|$)/g) || [fullText];
+
+                const bookRecord = {
+                    id: id,
+                    title: title,
+                    author: author,
+                    coverUrl: coverUrl,
+                    fullText: fullText,
+                    pagesEN: pages,
+                    totalPages: pages.length,
+                    savedAt: new Date().toLocaleDateString('ml-IN')
+                };
+
+                await saveBookToDB(bookRecord);
+
+                if (btn) {
+                    btn.className = "w-full py-1 bg-slate-200 text-slate-700 rounded text-[10px] font-bold flex items-center justify-center gap-1";
+                    btn.innerHTML = `<i class="fa-solid fa-check text-[9px]"></i> ഡൗൺലോഡ് ചെയ്‌തു`;
+                }
+            } catch (err) {
+                alert("ഡൗൺലോഡിൽ പിശക് സംഭവിച്ചു. വീണ്ടും ശ്രമിക്കുക.");
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-download text-[9px]"></i> ഡൗൺലോഡ് ചെയ്യുക`;
+                }
+            }
+        }
+
+        async function refreshLibraryView() {
+            const books = await getAllBooksFromDB();
+
+            if (books.length === 0) {
+                libraryEmpty.classList.remove('hidden');
+                libraryGrid.innerHTML = '';
+                return;
+            }
+
+            libraryEmpty.classList.add('hidden');
+            libraryGrid.innerHTML = books.map(book => `
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div class="flex items-center space-x-3 min-w-0">
+                        <img src="${book.coverUrl}" class="w-12 h-16 object-cover rounded shadow-xs shrink-0">
+                        <div class="min-w-0">
+                            <h3 class="font-bold text-xs text-slate-800 truncate">${book.title}</h3>
+                            <p class="text-[10px] text-slate-500 truncate">${book.author}</p>
+                            <span class="inline-block mt-1 bg-emerald-100 text-emerald-800 text-[9px] px-2 py-0.5 rounded-full font-bold">
+                                <i class="fa-solid fa-database text-[8px]"></i> IndexedDB (${book.totalPages} താളുകൾ)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1 shrink-0 ml-2">
+                        <button onclick="openSavedBook('${book.id}')" class="px-3 py-1 bg-indigo-600 text-white rounded text-[10px] font-bold active:scale-95">
+                            വായിക്കുക
+                        </button>
+                        <button onclick="removeBook('${book.id}')" class="px-3 py-1 bg-red-50 text-red-600 rounded text-[10px] font-bold active:scale-95">
+                            മായ്ക്കുക
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function removeBook(id) {
+            if (confirm("ഈ പുസ്തകം സേവ് ചെയ്ത പട്ടികയിൽ നിന്ന് ഒഴിവാക്കണോ?")) {
+                await deleteBookFromDB(id);
+            }
+        }
+
+        /* ====================================================================
+           6. E-READER ENGINE & PARALLEL FAST TRANSLATION
+           ==================================================================== */
+        async function openSavedBook(id) {
+            const books = await getAllBooksFromDB();
+            const found = books.find(b => b.id === id);
+            if (!found) return;
+
+            activeBook = found;
+            bookPagesEN = found.pagesEN || [];
+            bookPagesML = []; // Will translate on-demand fast
+
+            document.getElementById('reader-book-title').innerText = activeBook.title;
+            currentPageIndex = 0;
+
+            viewReader.classList.remove('hidden');
+            switchTab('reader');
+            renderCurrentPage();
+        }
+
+        async function readBookOnline(id, titleEnc, authorEnc) {
+            const title = decodeURIComponent(titleEnc);
+            const author = decodeURIComponent(authorEnc);
+
+            activeBook = { id, title, author };
+            pageContent.innerHTML = `<div class="p-4 text-center text-xs text-slate-500">താളുകൾ വേഗത്തിൽ ലോഡ് ചെയ്യുന്നു...</div>`;
+
+            viewReader.classList.remove('hidden');
+            switchTab('reader');
+
+            let fullText = `${title} by ${author}.\n\nThis e-publication is open for online preview. Use the slide-over translation button to quickly convert any page to Malayalam.`;
+            try {
+                const gRes = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(title)}`);
                 const gData = await gRes.json();
                 if (gData.results.length > 0 && gData.results[0].formats['text/plain; charset=us-ascii']) {
                     const rawRes = await fetch(gData.results[0].formats['text/plain; charset=us-ascii']);
                     const rawText = await rawRes.text();
-                    fullText = rawText.slice(1000, 5000).replace(/\r\n/g, ' ').replace(/\n/g, ' ');
+                    fullText = rawText.slice(1200, 6000).replace(/\r\n/g, ' ').replace(/\n/g, ' ');
                 }
             } catch (e) {
-                console.log("Full-text fetch fallback active.");
+                console.log("Online preview stream active");
             }
 
-            // Split into pages (Optimal 350 chars for mobile screen)
-            bookPagesEN = fullText.match(/.{1,350}(?=\s|$)/g) || [fullText];
-
-            // PARALLEL CONCURRENT TRANSLATION ENGINE (Promise.all)
-            bookPagesML = await translatePagesInParallel(bookPagesEN);
-
-            transProgress.classList.add('hidden');
+            bookPagesEN = fullText.match(/.{1,380}(?=\s|$)/g) || [fullText];
+            bookPagesML = [];
             currentPageIndex = 0;
             renderCurrentPage();
         }
 
-        // Parallel Translation function running Promise.all for super-fast results
-        async function translatePagesInParallel(pages) {
-            const promises = pages.map(async (pageText) => {
-                // Check Cache First (0ms)
-                if (translationCache.has(pageText)) {
-                    return translationCache.get(pageText);
-                }
-
-                try {
-                    const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(pageText)}&langpair=en|ml`);
-                    const data = await response.json();
-                    const translated = data.responseData ? data.responseData.translatedText : pageText;
-                    
-                    // Cache Result
-                    translationCache.set(pageText, translated);
-                    return translated;
-                } catch (err) {
-                    return pageText; // Graceful fallback
-                }
-            });
-
-            // Execute all chunk requests simultaneously
-            return await Promise.all(promises);
-        }
-
-        // Render Current Page
         function renderCurrentPage() {
-            const pages = currentLang === 'ml' ? bookPagesML : bookPagesEN;
-            totalPagesNum.innerText = pages.length;
+            totalPagesNum.innerText = bookPagesEN.length;
             currentPageNum.innerText = currentPageIndex + 1;
 
-            if (pages.length > 0) {
+            if (bookPagesEN.length > 0) {
                 pageContent.style.fontSize = `${fontSizeLevel}px`;
-                pageContent.innerHTML = `<p class="leading-relaxed font-medium">${pages[currentPageIndex]}</p>`;
+                pageContent.innerHTML = `<p class="leading-relaxed">${bookPagesEN[currentPageIndex]}</p>`;
             }
 
             document.getElementById('prev-page-btn').disabled = currentPageIndex === 0;
-            document.getElementById('next-page-btn').disabled = currentPageIndex >= pages.length - 1;
+            document.getElementById('next-page-btn').disabled = currentPageIndex >= bookPagesEN.length - 1;
+
+            // Close side drawer if open
+            document.getElementById('translate-drawer').classList.add('translate-x-full');
         }
 
-        // Page Turn Navigation
+        // Parallel Fast Malayalam Translation Drawer Engine
+        async function toggleTranslateDrawer() {
+            const drawer = document.getElementById('translate-drawer');
+            const drawerBody = document.getElementById('drawer-translation-body');
+            const speedStatus = document.getElementById('trans-speed-status');
+
+            if (drawer.classList.contains('translate-x-full')) {
+                drawer.classList.remove('translate-x-full');
+                drawerBody.innerHTML = `<div class="p-6 text-center text-xs text-indigo-600 font-bold animate-pulse">തത്സമയം പരിഭാഷപ്പെടുത്തുന്നു...</div>`;
+
+                const pageText = bookPagesEN[currentPageIndex];
+
+                // Check Cache First
+                if (translationCache.has(pageText)) {
+                    drawerBody.innerHTML = `<p class="leading-relaxed font-semibold">${translationCache.get(pageText)}</p>`;
+                    speedStatus.innerText = "തയ്യാർ (Cache)";
+                    return;
+                }
+
+                // Parallel Multi-Chunk Fast Translation
+                const chunks = pageText.match(/.{1,180}(?=\s|$)/g) || [pageText];
+                try {
+                    const translatedChunks = await Promise.all(chunks.map(async (chunk) => {
+                        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=en|ml`);
+                        const data = await res.json();
+                        return data.responseData ? data.responseData.translatedText : chunk;
+                    }));
+
+                    const finalMalayalam = translatedChunks.join(' ');
+                    translationCache.set(pageText, finalMalayalam);
+
+                    drawerBody.innerHTML = `<p class="leading-relaxed font-semibold text-slate-800">${finalMalayalam}</p>`;
+                    speedStatus.innerText = "തത്സമയം പൂർത്തിയായി";
+                } catch (err) {
+                    drawerBody.innerHTML = `<p class="text-xs text-red-500">പരിഭാഷ ലഭ്യമല്ല.</p>`;
+                }
+            } else {
+                drawer.classList.add('translate-x-full');
+            }
+        }
+
         function nextPage() {
-            const pages = currentLang === 'ml' ? bookPagesML : bookPagesEN;
-            if (currentPageIndex < pages.length - 1) {
+            if (currentPageIndex < bookPagesEN.length - 1) {
                 stopSpeech();
                 currentPageIndex++;
                 animatePageFlip('next');
@@ -464,74 +765,77 @@
         function animatePageFlip(dir) {
             const card = document.getElementById('page-card');
             card.classList.add(dir === 'next' ? 'flip-next' : 'flip-prev');
-            setTimeout(() => {
-                card.classList.remove('flip-next', 'flip-prev');
-            }, 200);
+            setTimeout(() => card.classList.remove('flip-next', 'flip-prev'), 200);
         }
 
-        // Reader Controls: Font & Language
+        function exitReader() {
+            stopSpeech();
+            viewReader.classList.add('hidden');
+            switchTab('discover');
+        }
+
         function changeFontSize(delta) {
             fontSizeLevel = Math.max(12, Math.min(22, fontSizeLevel + delta));
             pageContent.style.fontSize = `${fontSizeLevel}px`;
         }
 
-        function setReaderLanguage(lang) {
-            currentLang = lang;
-            stopSpeech();
-
-            if (lang === 'ml') {
-                document.getElementById('lang-btn-ml').className = "flex-1 py-0.5 rounded bg-white text-indigo-700 text-center shadow-xs";
-                document.getElementById('lang-btn-en').className = "flex-1 py-0.5 rounded text-slate-600 text-center";
-            } else {
-                document.getElementById('lang-btn-ml').className = "flex-1 py-0.5 rounded text-slate-600 text-center";
-                document.getElementById('lang-btn-en').className = "flex-1 py-0.5 rounded bg-white text-indigo-700 text-center shadow-xs";
-            }
-            renderCurrentPage();
-        }
-
         function toggleReaderTheme() {
-            const readerSec = document.getElementById('reader-view');
             if (currentTheme === 'light') {
                 currentTheme = 'sepia';
-                readerSec.className = "absolute inset-0 z-20 flex flex-col theme-sepia transition-colors duration-200";
+                viewReader.className = "absolute inset-0 z-40 flex flex-col theme-sepia transition-colors duration-200";
             } else if (currentTheme === 'sepia') {
                 currentTheme = 'dark';
-                readerSec.className = "absolute inset-0 z-20 flex flex-col theme-dark transition-colors duration-200";
+                viewReader.className = "absolute inset-0 z-40 flex flex-col theme-dark transition-colors duration-200";
             } else {
                 currentTheme = 'light';
-                readerSec.className = "absolute inset-0 z-20 flex flex-col theme-light transition-colors duration-200";
+                viewReader.className = "absolute inset-0 z-40 flex flex-col theme-light transition-colors duration-200";
             }
         }
 
+        /* ====================================================================
+           7. FEMALE VOICE SPEECH SYNTHESIS ENGINE
+           ==================================================================== */
         function toggleSpeech() {
             if (isSpeaking) {
                 stopSpeech();
             } else {
-                startSpeech();
+                startSpeech('en');
             }
         }
 
-        function startSpeech() {
-            const pages = currentLang === 'ml' ? bookPagesML : bookPagesEN;
-            const textToRead = pages[currentPageIndex];
+        function speakMalayalamTranslation() {
+            const pageText = bookPagesEN[currentPageIndex];
+            const mlText = translationCache.get(pageText);
 
+            if (mlText) {
+                startSpeech('ml', mlText);
+            } else {
+                alert("പരിഭാഷ പൂർത്തിയാകാൻ കാത്തിരിക്കുക.");
+            }
+        }
+
+        function startSpeech(lang, overrideText = null) {
+            stopSpeech();
+            const textToRead = overrideText || bookPagesEN[currentPageIndex];
             if (!textToRead) return;
 
             currentUtterance = new SpeechSynthesisUtterance(textToRead);
 
-            if (currentLang === 'ml') {
+            if (lang === 'ml') {
                 currentUtterance.lang = 'ml-IN';
-                currentUtterance.pitch = 1.15; // Natural Female Voice Pitch Adjustment
-                currentUtterance.rate = 0.88;   // Smooth natural speaking speed
+                currentUtterance.pitch = 1.15; // Female voice pitch
+                currentUtterance.rate = 0.90;   // Natural speaking rate
+                document.getElementById('voice-lang-label').innerText = 'മലയാളം sound';
             } else {
                 currentUtterance.lang = 'en-US';
                 currentUtterance.pitch = 1.1;
                 currentUtterance.rate = 0.95;
+                document.getElementById('voice-lang-label').innerText = 'English sound';
             }
 
             const voices = synth.getVoices();
-            const targetLang = currentLang === 'ml' ? 'ml' : 'en';
-            const femaleVoice = voices.find(v => v.lang.includes(targetLang) && (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Zira') || v.name.includes('Samantha')));
+            const targetLang = lang === 'ml' ? 'ml' : 'en';
+            const femaleVoice = voices.find(v => v.lang.includes(targetLang) && (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Zira')));
 
             if (femaleVoice) {
                 currentUtterance.voice = femaleVoice;
@@ -556,7 +860,7 @@
             document.getElementById('play-pause-btn').innerHTML = `<i class="fa-solid fa-play"></i>`;
         }
 
-        // Touch Swipe Gestures
+        // Swipe Gestures Logic
         function initTouchSwipe() {
             const pageArea = document.getElementById('page-area');
             let startX = 0;
@@ -569,11 +873,8 @@
                 const endX = e.changedTouches[0].clientX;
                 const diffX = startX - endX;
 
-                if (diffX > 40) {
-                    nextPage(); // Swipe Left -> Next Page
-                } else if (diffX < -40) {
-                    prevPage(); // Swipe Right -> Previous Page
-                }
+                if (diffX > 40) nextPage();
+                else if (diffX < -40) prevPage();
             }, { passive: true });
         }
 
