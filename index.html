@@ -4,33 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>വായനപ്പുര - E-Book Reader & Offline Downloader</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Gayathri:wght@400;700&display=swap');
-        
-        :root {
-            --app-height: 100vh;
-        }
-
+        :root { --app-height: 100vh; }
         body {
             font-family: 'Manjari', sans-serif;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
         }
-
         .theme-light { background-color: #f8fafc; color: #0f172a; }
         .theme-sepia { background-color: #fbf0d9; color: #432818; }
         .theme-dark { background-color: #0f172a; color: #f1f5f9; }
-
-        .book-card-sepia { background-color: #f4e4bc; border-color: #e6ccb2; }
-        .book-card-dark { background-color: #1e293b; border-color: #334155; }
-
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
         .page-content {
             font-family: 'Gayathri', sans-serif;
             line-height: 1.8;
@@ -41,7 +30,6 @@
 </head>
 <body class="theme-light antialiased flex flex-col h-screen overflow-hidden">
 
-    <!-- Top Header -->
     <header class="bg-indigo-700 text-white shrink-0 shadow-md z-20">
         <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center gap-2">
@@ -54,44 +42,38 @@
         </div>
     </header>
 
-    <!-- Main Content Area -->
     <main class="flex-1 max-w-md w-full mx-auto relative overflow-hidden flex flex-col">
 
-        <!-- TAB 1: DISCOVER / SEARCH -->
+        <!-- TAB 1: SEARCH -->
         <section id="tabSearch" class="flex-1 flex flex-col p-4 overflow-y-auto hide-scrollbar space-y-4">
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-2">
                 <i class="fa-solid fa-magnifying-glass text-slate-400 ml-2"></i>
-                <input type="text" id="searchInput" placeholder="പുസ്തകത്തിന്റെ പേര് അല്ലെങ്കിൽ എഴുത്തുകാരൻ..." 
+                <input type="text" id="searchInput" placeholder="പുസ്തകത്തിന്റെ പേര് അല്ലെങ്കിൽ എഴുത്തുകാരൻ..."
                        class="w-full bg-transparent border-none outline-none text-sm text-slate-800 placeholder-slate-400">
                 <button onclick="triggerSearch()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition">
                     തിരയുക
                 </button>
             </div>
-
-            <!-- Categories -->
             <div class="flex gap-2 overflow-x-auto hide-scrollbar py-1">
                 <button onclick="quickFilter('Nobel Prize')" class="shrink-0 text-xs bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1.5 rounded-full font-bold">🏆 നോബൽ പുരസ്കാരം</button>
                 <button onclick="quickFilter('Classics')" class="shrink-0 text-xs bg-indigo-100 text-indigo-800 border border-indigo-300 px-3 py-1.5 rounded-full font-bold">📚 ക്ലാസിക്കുകൾ</button>
                 <button onclick="quickFilter('Science Fiction')" class="shrink-0 text-xs bg-cyan-100 text-cyan-800 border border-cyan-300 px-3 py-1.5 rounded-full font-bold">🧬 സയൻസ്</button>
             </div>
-
-            <!-- Search Results -->
-            <div id="searchResults" class="space-y-3 pb-20">
-                <!-- Results injected here -->
-            </div>
+            <div id="searchResults" class="space-y-3 pb-20"></div>
         </section>
 
-        <!-- TAB 2: DOWNLOAD MANAGER -->
+        <!-- TAB 2: DOWNLOADS -->
         <section id="tabDownloads" class="flex-1 flex flex-col p-4 overflow-y-auto hide-scrollbar hidden space-y-4">
             <div class="flex justify-between items-center border-b pb-2 border-slate-200">
                 <h2 class="font-bold text-slate-800 flex items-center gap-2">
                     <i class="fa-solid fa-download text-indigo-600"></i> ഡൗൺലോഡ് മാനേജർ
                 </h2>
-                <span id="downloadCountBadge" class="text-xs bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full font-bold">0 ഫയലുകൾ</span>
+                <div class="flex items-center gap-2">
+                    <button onclick="setMyProxy()" title="സ്വന്തം പ്രോക്സി" class="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 text-xs flex items-center justify-center"><i class="fa-solid fa-gear"></i></button>
+                    <span id="downloadCountBadge" class="text-xs bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full font-bold">0 ഫയലുകൾ</span>
+                </div>
             </div>
-
             <div id="downloadsList" class="space-y-3 pb-20">
-                <!-- Download items injected dynamically -->
                 <div id="emptyDownloadsMsg" class="text-center py-12 text-slate-400">
                     <i class="fa-solid fa-cloud-arrow-down text-4xl mb-2"></i>
                     <p class="text-sm">ഡൗൺലോഡുകളൊന്നും പുരോഗമിക്കുന്നില്ല</p>
@@ -99,7 +81,7 @@
             </div>
         </section>
 
-        <!-- TAB 3: MY LIBRARY -->
+        <!-- TAB 3: LIBRARY -->
         <section id="tabLibrary" class="flex-1 flex flex-col p-4 overflow-y-auto hide-scrollbar hidden space-y-4">
             <div class="flex justify-between items-center border-b pb-2 border-slate-200">
                 <h2 class="font-bold text-slate-800 flex items-center gap-2">
@@ -110,16 +92,11 @@
                     <input type="file" id="localFileInput" accept=".txt" class="hidden" onchange="handleFileUpload(event)">
                 </label>
             </div>
-
-            <div id="libraryGrid" class="grid grid-cols-1 gap-3 pb-20">
-                <!-- Offline books list -->
-            </div>
+            <div id="libraryGrid" class="grid grid-cols-1 gap-3 pb-20"></div>
         </section>
 
-        <!-- TAB 4: READER VIEW -->
+        <!-- TAB 4: READER -->
         <section id="tabReader" class="flex-1 flex flex-col hidden relative overflow-hidden">
-            
-            <!-- Reader Top Sub-Bar -->
             <div class="bg-slate-100 border-b border-slate-200 p-2 flex justify-between items-center shrink-0">
                 <div class="flex items-center gap-1">
                     <button onclick="changeFontSize(-1)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-bold text-xs flex items-center justify-center">A-</button>
@@ -128,21 +105,23 @@
                         <i class="fa-solid fa-palette text-indigo-600"></i>
                     </button>
                 </div>
-
-                <!-- Mini AI Translator Trigger Button -->
-                <button id="translateBtn" onclick="translateCurrentPage()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
-                    <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> മലയാളത്തിലേക്ക് മാറ്റുക
-                </button>
+                <div class="flex items-center gap-1.5">
+                    <button onclick="openTranslationSettings()" title="AI പരിഭാഷ ക്രമീകരണങ്ങൾ" class="w-8 h-8 rounded-lg bg-white border border-slate-300 text-indigo-600 text-xs flex items-center justify-center">
+                        <i class="fa-solid fa-key"></i>
+                    </button>
+                    <button id="translateBtn" onclick="translateCurrentPage()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> ഈ പേജ്
+                    </button>
+                    <button id="translateBookBtn" onclick="translateFullBook()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+                        <i class="fa-solid fa-book"></i> മുഴുവൻ പുസ്തകം
+                    </button>
+                </div>
             </div>
-
-            <!-- Page Content Canvas -->
             <div id="readerCanvas" class="flex-1 p-5 overflow-y-auto page-content text-slate-800 relative">
                 <div id="pageTextContent" class="space-y-4">
                     വായന ആരംഭിക്കാൻ ലൈബ്രറിയിൽ നിന്ന് ഒരു പുസ്തകം തിരഞ്ഞെടുക്കുക.
                 </div>
             </div>
-
-            <!-- Floating Voice Controls -->
             <div id="voiceControlBar" class="absolute bottom-16 left-4 right-4 bg-slate-900/90 text-white backdrop-blur-md p-3 rounded-2xl flex items-center justify-between shadow-xl z-10 hidden">
                 <div class="flex items-center gap-2">
                     <div class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></div>
@@ -157,8 +136,6 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Reader Bottom Navigation Bar -->
             <div class="bg-slate-100 border-t border-slate-200 p-3 flex justify-between items-center shrink-0">
                 <button onclick="prevPage()" id="prevPageBtn" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold disabled:opacity-40">
                     <i class="fa-solid fa-chevron-left"></i> മുൻപ്
@@ -169,10 +146,81 @@
                 </button>
             </div>
         </section>
-
     </main>
 
-    <!-- Bottom App Navigation Bar -->
+    <!-- AI TRANSLATION MODAL -->
+    <div id="translationModal" class="fixed inset-0 bg-black/50 z-50 hidden items-end sm:items-center justify-center p-3">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden">
+            <div class="p-4 bg-indigo-700 text-white flex justify-between items-center">
+                <div>
+                    <h3 class="font-bold">AI മലയാളം പരിഭാഷ</h3>
+                    <p id="translationModalSub" class="text-[11px] text-indigo-200">പുസ്തകം മുഴുവൻ മലയാളത്തിലേക്ക്</p>
+                </div>
+                <button onclick="closeTranslationModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20">×</button>
+            </div>
+
+            <div id="translationSettingsPanel" class="p-4 space-y-3">
+                <div>
+                    <label class="text-xs font-bold text-slate-600">AI API URL</label>
+                    <input id="aiApiUrl" type="text" value="https://api.openai.com/v1/responses"
+                           class="mt-1 w-full border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-300">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-600">API Key</label>
+                    <input id="aiApiKey" type="password" placeholder="sk-..."
+                           class="mt-1 w-full border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-300">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-600">AI Model</label>
+                    <input id="aiModel" type="text" value="gpt-5.6-luna"
+                           class="mt-1 w-full border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-300">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs font-bold text-slate-600">Chunk size</label>
+                        <select id="aiChunkSize" class="mt-1 w-full border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                            <option value="3500">3,500 characters</option>
+                            <option value="5000" selected>5,000 characters</option>
+                            <option value="7000">7,000 characters</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-600">Delay</label>
+                        <select id="aiDelay" class="mt-1 w-full border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                            <option value="500">0.5 sec</option>
+                            <option value="1200" selected>1.2 sec</option>
+                            <option value="2500">2.5 sec</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-800 leading-relaxed">
+                    API key ബ്രൗസറിൽ സൂക്ഷിക്കപ്പെടുന്നതിനാൽ ഇത് വ്യക്തിഗത ഉപയോഗത്തിന് മാത്രം ഉപയോഗിക്കുക. Public website-ൽ key നേരിട്ട് ഇടരുത്. സുരക്ഷിതമായ server/proxy ഉപയോഗിക്കുന്നതാണ് നല്ലത്.
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="saveTranslationSettings()" class="flex-1 bg-indigo-600 text-white rounded-xl py-2.5 text-xs font-bold">സേവ് ചെയ്യുക</button>
+                    <button onclick="closeTranslationModal()" class="bg-slate-100 text-slate-700 rounded-xl px-4 py-2.5 text-xs font-bold">അടയ്ക്കുക</button>
+                </div>
+            </div>
+
+            <div id="translationProgressPanel" class="hidden p-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <span id="translationProgressText" class="text-xs font-bold text-slate-700">തയ്യാറാക്കുന്നു...</span>
+                    <span id="translationProgressPercent" class="text-xs font-bold text-indigo-600">0%</span>
+                </div>
+                <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <div id="translationProgressBar" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width:0%"></div>
+                </div>
+                <p id="translationProgressDetail" class="text-[11px] text-slate-500"></p>
+                <div class="flex gap-2">
+                    <button id="translationPauseBtn" onclick="toggleTranslationPause()" class="flex-1 bg-amber-100 text-amber-800 rounded-xl py-2.5 text-xs font-bold">
+                        <i class="fa-solid fa-pause"></i> Pause
+                    </button>
+                    <button onclick="cancelFullBookTranslation()" class="bg-red-100 text-red-700 rounded-xl px-4 py-2.5 text-xs font-bold">നിർത്തുക</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <nav class="bg-white border-t border-slate-200 shrink-0 z-20">
         <div class="max-w-md mx-auto flex justify-around py-2">
             <button onclick="switchTab('search')" id="navSearch" class="flex flex-col items-center gap-1 text-indigo-600">
@@ -194,430 +242,1435 @@
         </div>
     </nav>
 
-    <!-- JavaScript Application Core -->
-    <script>
-        // IndexedDB Configuration
-        const DB_NAME = 'VayanappuraDB';
-        const DB_VERSION = 1;
-        let db = null;
+<script>
+const DB_NAME = 'VayanappuraDB';
+const DB_VERSION = 2;
+let db = null;
 
-        // Active State
-        let activeBook = null;
-        let bookPages = [];
-        let currentPageIndex = 0;
-        let currentThemeIndex = 0; // 0: Light, 1: Sepia, 2: Dark
-        let currentFontSize = 18;
-        let activeDownloads = {}; // Key: bookId, Value: AbortController
+let activeBook = null;
+let bookPages = [];
+let currentPageIndex = 0;
+let currentThemeIndex = 0;
+let currentFontSize = 18;
 
-        // Speech Engine
-        let synth = window.speechSynthesis;
-        let speechUtterance = null;
+// Super Power Download Manager state
+const downloadManager = {};
 
-        // Initialization
-        window.addEventListener('DOMContentLoaded', async () => {
-            await initIndexedDB();
-            loadLibrary();
-            quickFilter('Nobel Prize');
+let synth = window.speechSynthesis;
+let speechUtterance = null;
+
+window.addEventListener('DOMContentLoaded', async () => {
+    try { await initIndexedDB(); loadLibrary(); } catch (e) { console.warn('IndexedDB unavailable', e); }
+    quickFilter('Classics');
+});
+
+function initIndexedDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = (e) => {
+            db = e.target.result;
+            if (!db.objectStoreNames.contains('books')) {
+                db.createObjectStore('books', { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains('translations')) {
+                db.createObjectStore('translations', { keyPath: 'key' });
+            }
+        };
+        request.onsuccess = (e) => { db = e.target.result; resolve(); };
+        request.onerror = (e) => reject(e);
+    });
+}
+
+function switchTab(tabName) {
+    ['Search', 'Downloads', 'Library', 'Reader'].forEach(t => {
+        const tabEl = document.getElementById('tab' + t);
+        const navEl = document.getElementById('nav' + t);
+        if (t.toLowerCase() === tabName) {
+            tabEl.classList.remove('hidden');
+            navEl.className = 'flex flex-col items-center gap-1 text-indigo-600';
+        } else {
+            tabEl.classList.add('hidden');
+            navEl.className = 'flex flex-col items-center gap-1 text-slate-400';
+        }
+    });
+}
+
+function quickFilter(query) {
+    document.getElementById('searchInput').value = query;
+    triggerSearch();
+}
+
+function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+}
+
+// encodeURIComponent leaves ' untouched, which breaks onclick="f('...')" for titles like "Alice's Adventures"
+function enc(s) { return encodeURIComponent(String(s == null ? '' : s)).replace(/'/g, '%27'); }
+
+const NO_COVER = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="140"><rect width="100" height="140" fill="#e2e8f0"/>' +
+    '<text x="50" y="76" font-size="12" text-anchor="middle" fill="#94a3b8" font-family="sans-serif">No Cover</text></svg>');
+
+const bookMeta = {};      // bookId -> { ia:[], access:'public'|... }
+let searchSeq = 0;
+let searchCtrl = null;
+
+async function triggerSearch() {
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) return;
+    const container = document.getElementById('searchResults');
+    container.innerHTML = '<div class="text-center py-8 text-slate-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2"></i><p class="text-xs">പുസ്തകങ്ങൾ തിരയുന്നു...</p></div>';
+
+    const seq = ++searchSeq;
+    if (searchCtrl) { try { searchCtrl.abort(); } catch (e) {} }
+    searchCtrl = new AbortController();
+
+    try {
+        const data = await fetchJSON('https://openlibrary.org/search.json?q=' + encodeURIComponent(query) + '&limit=20', searchCtrl.signal);
+        if (seq !== searchSeq) return;
+        let docs = (data && data.docs) || [];
+        if (docs.length === 0) {
+            container.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs">പുസ്തകങ്ങളൊന്നും കണ്ടെത്താനായില്ല</div>';
+            return;
+        }
+        // free-to-read books first (those are the ones that will actually download)
+        docs = docs.map(function (d, i) { return { d: d, i: i }; })
+            .sort(function (a, b) {
+                return ((b.d.ebook_access === 'public') - (a.d.ebook_access === 'public')) || (a.i - b.i);
+            })
+            .map(function (x) { return x.d; });
+
+        container.innerHTML = docs.map(function (book, idx) {
+            const bookId = book.key ? String(book.key).replace('/works/', '').replace(/[^A-Za-z0-9_\-]/g, '') : ('bk_' + Date.now() + '_' + idx);
+            const title = book.title || 'Unknown Title';
+            const author = book.author_name ? book.author_name[0] : 'Unknown Author';
+            bookMeta[bookId] = { ia: book.ia || [], access: book.ebook_access || '', year: book.first_publish_year || '' };
+            const cover = book.cover_i ? 'https://covers.openlibrary.org/b/id/' + book.cover_i + '-M.jpg' : NO_COVER;
+            const free = book.ebook_access === 'public'
+                ? '<span class="ml-1 text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold">സൗജന്യം</span>' : '';
+            return '<div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex gap-3 items-center">' +
+                '<img src="' + cover + '" loading="lazy" onerror="this.onerror=null;this.src=NO_COVER" class="w-16 h-20 object-cover rounded-xl shrink-0 bg-slate-100">' +
+                '<div class="flex-1 min-w-0">' +
+                '<h3 class="font-bold text-slate-800 text-sm truncate">' + escapeHtml(title) + free + '</h3>' +
+                '<p class="text-xs text-slate-500 truncate">' + escapeHtml(author) + '</p>' +
+                '<div class="mt-2 flex gap-2">' +
+                '<button onclick="startStreamDownload(\'' + bookId + '\',\'' + enc(title) + '\',\'' + enc(author) + '\')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1">' +
+                '<i class="fa-solid fa-cloud-arrow-down"></i> ഡൗൺലോഡ്</button>' +
+                '</div></div></div>';
+        }).join('');
+    } catch (err) {
+        if (seq !== searchSeq || (err && err.name === 'AbortError')) return;
+        container.innerHTML = '<div class="text-center py-8 text-red-500 text-xs">തിരയലിൽ പിശക് സംഭവിച്ചു. ഇന്റർനെറ്റ് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</div>';
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// FOOLPROOF EBOOK DOWNLOADER
+//  Sources   : Project Gutenberg (Gutendex → OPDS fallback → direct file URLs)
+//              → Internet Archive (open-access items only)
+//  Safety    : timeouts, stall detection, CORS-proxy rotation with auto-ranking,
+//              content validation (no proxy error pages), charset fix,
+//              Gutenberg licence-text stripping, safe IndexedDB save,
+//              pause / resume / retry, duplicate check
+// ═══════════════════════════════════════════════════════════
+
+const DL = {
+    SEARCH_TIMEOUT: 12000,          // search / metadata request
+    CONNECT_TIMEOUT: 15000,         // time until first response headers
+    STALL_TIMEOUT: 25000,           // no bytes for this long = stalled
+    MIN_CHARS: 2000,                // anything shorter is not a real book
+    MAX_BYTES: 80 * 1024 * 1024
+};
+
+const MSG_NOT_FOUND = 'ഈ പുസ്തകം സൗജന്യ (പബ്ലിക് ഡൊമെയ്ൻ) ലൈബ്രറികളിൽ കണ്ടെത്താനായില്ല. പകർപ്പവകാശമുള്ള പുസ്തകമാകാം — മറ്റൊരു പുസ്തകം/പതിപ്പ് നോക്കുക.';
+
+const MSG_NO_NET = 'സെർവറുകളുമായി ബന്ധപ്പെടാനായില്ല. ഇന്റർനെറ്റ് പരിശോധിച്ച് റീട്രൈ ചെയ്യുക.';
+const MSG_PARTIAL = 'ചില സെർവറുകൾ പ്രതികരിച്ചില്ല, അതിനാൽ പുസ്തകം കണ്ടെത്താനായില്ല. റീട്രൈ ചെയ്യുക (പകർപ്പവകാശമുള്ള പുസ്തകവുമാകാം).';
+
+class DlError extends Error {
+    constructor(msg, opts) {
+        super(msg);
+        this.name = 'DlError';
+        this.kind = (opts && opts.kind) || 'network';   // network | timeout | http | notfound | invalid | toobig | offline
+    }
+}
+function abortErr() { return new DOMException('Aborted', 'AbortError'); }
+
+// ---------- formatting helpers ----------
+function formatBytes(bytes) {
+    if (!bytes || bytes < 0) return '—';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(2) + ' MB';
+}
+
+function formatSpeed(bps) {
+    if (!bps || bps < 1) return '0 KB/s';
+    if (bps < 1024) return Math.round(bps) + ' B/s';
+    if (bps < 1048576) return (bps / 1024).toFixed(1) + ' KB/s';
+    return (bps / 1048576).toFixed(2) + ' MB/s';
+}
+
+// ---------- card UI ----------
+function updateDownloadCountBadge() {
+    const n = document.querySelectorAll('#downloadsList [id^="dl_card_"]').length;
+    const badge = document.getElementById('downloadCountBadge');
+    if (badge) badge.innerText = n + ' ഫയലുകൾ';
+    const empty = document.getElementById('emptyDownloadsMsg');
+    if (empty) empty.classList.toggle('hidden', n > 0);
+}
+
+function setCardStatus(bookId, text, cls) {
+    const el = document.getElementById('dl_status_' + bookId);
+    if (!el) return;
+    el.className = 'shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ' + cls;
+    el.innerText = text;
+}
+
+function updateProgressUI(bookId, received, total, speed) {
+    const pct = total > 0 ? Math.min(100, Math.round((received / total) * 100)) : 0;
+    const bar = document.getElementById('dl_bar_' + bookId);
+    const pctEl = document.getElementById('dl_percent_' + bookId);
+    const sizeEl = document.getElementById('dl_size_' + bookId);
+    const speedEl = document.getElementById('dl_speed_' + bookId);
+    if (bar) bar.style.width = (total > 0 ? pct : Math.min(90, Math.round(received / 8000))) + '%';
+    if (pctEl) pctEl.innerText = total > 0 ? pct + '%' : formatBytes(received);
+    if (sizeEl) sizeEl.innerText = total > 0 ? formatBytes(received) + ' / ' + formatBytes(total) : formatBytes(received);
+    if (speedEl) speedEl.innerText = formatSpeed(speed);
+}
+
+function createDownloadCard(bookId, title, author) {
+    const container = document.getElementById('downloadsList');
+    document.getElementById('emptyDownloadsMsg')?.classList.add('hidden');
+    const old = document.getElementById('dl_card_' + bookId);
+    if (old) old.remove();
+    const card = document.createElement('div');
+    card.id = 'dl_card_' + bookId;
+    card.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2';
+    card.innerHTML =
+        '<div class="flex justify-between items-start gap-2">' +
+        '<div class="min-w-0 flex-1"><h4 class="font-bold text-sm text-slate-800 truncate">' + escapeHtml(title) + '</h4>' +
+        '<p class="text-xs text-slate-500 truncate">' + escapeHtml(author) + '</p></div>' +
+        '<span id="dl_status_' + bookId + '" class="shrink-0 text-[10px] font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">തയ്യാറാക്കുന്നു...</span></div>' +
+        '<div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">' +
+        '<div id="dl_bar_' + bookId + '" class="bg-indigo-600 h-full w-0 transition-all duration-150 rounded-full"></div></div>' +
+        '<div class="flex justify-between items-center text-[11px]">' +
+        '<div class="flex items-center gap-2 text-slate-500 font-semibold">' +
+        '<span id="dl_percent_' + bookId + '">0%</span><span class="text-slate-300">|</span>' +
+        '<span id="dl_size_' + bookId + '">0 B</span><span class="text-slate-300">|</span>' +
+        '<span id="dl_speed_' + bookId + '" class="text-emerald-600 font-bold">0 KB/s</span></div>' +
+        '<div class="flex gap-1.5">' +
+        '<button onclick="togglePauseResume(\'' + bookId + '\')" id="pause_btn_' + bookId + '" class="bg-amber-100 text-amber-800 w-8 h-8 rounded-lg font-bold flex items-center justify-center"><i class="fa-solid fa-pause text-xs"></i></button>' +
+        '<button onclick="cancelDownload(\'' + bookId + '\')" class="bg-red-100 text-red-700 w-8 h-8 rounded-lg font-bold flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button>' +
+        '</div></div>' +
+        '<p id="dl_msg_' + bookId + '" class="hidden text-[11px] leading-snug text-red-600 break-words whitespace-pre-line"></p>' +
+        '<div id="dl_links_' + bookId + '" class="hidden flex flex-wrap gap-2 items-center text-[11px]"></div>';
+    container.prepend(card);
+    updateDownloadCountBadge();
+    return card;
+}
+
+function resetCardUI(bookId) {
+    const bar = document.getElementById('dl_bar_' + bookId);
+    if (bar) { bar.style.width = '0%'; bar.classList.remove('bg-emerald-500'); bar.classList.add('bg-indigo-600'); }
+    const msg = document.getElementById('dl_msg_' + bookId);
+    if (msg) { msg.classList.add('hidden'); msg.innerText = ''; }
+    const lk = document.getElementById('dl_links_' + bookId);
+    if (lk) { lk.classList.add('hidden'); lk.innerHTML = ''; }
+    const btn = document.getElementById('pause_btn_' + bookId);
+    if (btn) { btn.style.display = ''; btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>'; }
+    updateProgressUI(bookId, 0, 0, 0);
+    setCardStatus(bookId, 'തയ്യാറാക്കുന്നു...', 'bg-indigo-100 text-indigo-700');
+}
+
+// ---------- network layer ----------
+// Order is the initial preference; the app learns which transport works per host and prefers it.
+const TRANSPORTS = [
+    { id: 'direct',     wrap: function (u) { return u; } },
+    { id: 'corsproxy',  wrap: function (u) { return 'https://corsproxy.io/?' + encodeURIComponent(u); } },
+    { id: 'allorigins', wrap: function (u) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); } },
+    { id: 'codetabs',   wrap: function (u) { return 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(u); } },
+    { id: 'eu-org',     wrap: function (u) { return 'https://cors.eu.org/' + u; } },
+    { id: 'jina',       wrap: function (u) { return 'https://r.jina.ai/' + u; } }
+];
+
+// Your own proxy (e.g. a free Cloudflare Worker) is the only 100% reliable option.
+function getMyProxy() { try { return (localStorage.getItem('vp_my_proxy') || '').trim(); } catch (e) { return ''; } }
+function setMyProxy() {
+    const v = prompt('സ്വന്തം CORS പ്രോക്സി URL നൽകുക (ഉദാ: https://name.workers.dev/?url=)\nഒഴിച്ചിട്ട് OK അമർത്തിയാൽ ഒഴിവാക്കും.', getMyProxy());
+    if (v === null) return;
+    try { localStorage.setItem('vp_my_proxy', v.trim()); } catch (e) {}
+    alert(v.trim() ? 'സേവ് ചെയ്തു ✓ — ഇനി ഇത് ആദ്യം ഉപയോഗിക്കും' : 'ഒഴിവാക്കി');
+}
+function allTransports() {
+    const base = getMyProxy();
+    if (!base) return TRANSPORTS;
+    const b = base.indexOf('?') < 0 ? base + '?url=' : base;
+    return [{ id: 'mine', wrap: function (u) { return b + encodeURIComponent(u); } }].concat(TRANSPORTS);
+}
+
+let txScore = {};
+try { txScore = JSON.parse(localStorage.getItem('vp_tx_score') || '{}') || {}; } catch (e) { txScore = {}; }
+
+function hostOf(url) { try { return new URL(url).hostname; } catch (e) { return ''; } }
+function txKey(id, url) { return id + '|' + hostOf(url); }
+
+function rankedTransports(dead, url) {
+    return allTransports()
+        .map(function (t, i) { return { t: t, i: i, s: txScore[txKey(t.id, url)] || 0 }; })
+        .filter(function (x) { return !(dead && dead.has(txKey(x.t.id, url))); })
+        .sort(function (a, b) { return (b.s - a.s) || (a.i - b.i); })
+        .map(function (x) { return x.t; });
+}
+
+function rateTransport(id, url, ok) {
+    const k = txKey(id, url);
+    txScore[k] = Math.max(-5, Math.min(10, (txScore[k] || 0) + (ok ? 1 : -1)));
+    try { localStorage.setItem('vp_tx_score', JSON.stringify(txScore)); } catch (e) {}
+}
+
+// fetch with: connect timeout + user abort + typed errors
+function fetchWithTimeout(url, userSignal, ms) {
+    if (userSignal.aborted) return Promise.reject(abortErr());
+    const ctrl = new AbortController();
+    let timedOut = false;
+    const timer = setTimeout(function () { timedOut = true; ctrl.abort(); }, ms);
+    const link = function () { ctrl.abort(); };
+    userSignal.addEventListener('abort', link, { once: true });   // stays linked so the body read can be aborted too
+    return fetch(url, { signal: ctrl.signal, redirect: 'follow', cache: 'no-store' })
+        .then(function (res) { clearTimeout(timer); return res; })
+        .catch(function (e) {
+            clearTimeout(timer);
+            userSignal.removeEventListener('abort', link);
+            if (userSignal.aborted) throw abortErr();
+            if (timedOut) throw new DlError('Timeout', { kind: 'timeout' });
+            throw new DlError((e && e.message) || 'Network error', { kind: 'network' });
+        });
+}
+
+function withTimeout(promise, ms, signal) {
+    return new Promise(function (resolve, reject) {
+        const t = setTimeout(function () { reject(new DlError('Timeout', { kind: 'timeout' })); }, ms);
+        promise.then(function (v) { clearTimeout(t); resolve(v); }, function (e) { clearTimeout(t); reject(signal && signal.aborted ? abortErr() : e); });
+    });
+}
+
+// small text/JSON request (search, metadata) through all transports
+async function fetchTextVia(url, signal, parse, stat) {
+    let lastErr = null;
+    const list = rankedTransports(null, url);
+    for (let i = 0; i < list.length; i++) {
+        const t = list[i];
+        if (signal.aborted) throw abortErr();
+        try {
+            const res = await fetchWithTimeout(t.wrap(url), signal, DL.SEARCH_TIMEOUT);
+            if (!res.ok) throw new DlError('HTTP ' + res.status, { kind: 'http' });
+            const txt = await withTimeout(res.text(), DL.SEARCH_TIMEOUT, signal);
+            const out = parse(txt);
+            rateTransport(t.id, url, true);
+            if (stat) stat.ok++;
+            return out;
+        } catch (e) {
+            if (signal.aborted) throw abortErr();
+            lastErr = e;
+            rateTransport(t.id, url, false);
+        }
+    }
+    if (stat) stat.fail++;
+    throw lastErr || new DlError('Network error', { kind: 'network' });
+}
+function fetchJSON(url, signal, stat) { return fetchTextVia(url, signal, function (t) { return JSON.parse(t); }, stat); }
+function fetchXML(url, signal, stat) {
+    return fetchTextVia(url, signal, function (t) {
+        const doc = new DOMParser().parseFromString(t, 'application/xml');
+        if (doc.getElementsByTagName('parsererror').length) throw new DlError('Bad XML', { kind: 'invalid' });
+        return doc;
+    }, stat);
+}
+
+function readWithStall(reader, ms) {
+    return new Promise(function (resolve, reject) {
+        const t = setTimeout(function () {
+            try { reader.cancel(); } catch (e) {}
+            reject(new DlError('ഡാറ്റ വരുന്നില്ല (stalled)', { kind: 'timeout' }));
+        }, ms);
+        reader.read().then(function (r) { clearTimeout(t); resolve(r); }, function (e) { clearTimeout(t); reject(e); });
+    });
+}
+
+// download one URL as bytes with progress
+async function streamBytes(url, entry, signal) {
+    const res = await fetchWithTimeout(url, signal, DL.CONNECT_TIMEOUT);
+    if (!res.ok) {
+        throw new DlError('HTTP ' + res.status, { kind: (res.status === 404 || res.status === 410) ? 'notfound' : 'http' });
+    }
+    const total = parseInt(res.headers.get('content-length') || '0', 10) || 0;
+    const ctype = res.headers.get('content-type') || '';
+    entry.total = total;
+    entry.received = 0;
+    const id = entry.bookId;
+
+    if (!res.body || typeof res.body.getReader !== 'function') {
+        const buf = new Uint8Array(await res.arrayBuffer());
+        entry.received = buf.byteLength;
+        updateProgressUI(id, buf.byteLength, buf.byteLength, 0);
+        return { bytes: buf, ctype: ctype };
+    }
+
+    const reader = res.body.getReader();
+    const chunks = [];
+    let received = 0, lastTick = Date.now(), lastBytes = 0;
+    while (true) {
+        const r = await readWithStall(reader, DL.STALL_TIMEOUT);
+        if (r.done) break;
+        if (signal.aborted) { try { reader.cancel(); } catch (e) {} throw abortErr(); }
+        chunks.push(r.value);
+        received += r.value.byteLength;
+        entry.received = received;
+        if (received > DL.MAX_BYTES) { try { reader.cancel(); } catch (e) {} throw new DlError('ഫയൽ വളരെ വലുത്', { kind: 'toobig' }); }
+        const now = Date.now();
+        if (now - lastTick >= 250) {
+            entry.speed = (received - lastBytes) / ((now - lastTick) / 1000);
+            lastTick = now; lastBytes = received;
+            updateProgressUI(id, received, total, entry.speed);
+        }
+    }
+    const bytes = new Uint8Array(received);
+    let off = 0;
+    chunks.forEach(function (c) { bytes.set(c, off); off += c.byteLength; });
+    entry.speed = 0;
+    updateProgressUI(id, received, total || received, 0);
+    return { bytes: bytes, ctype: ctype };
+}
+
+// ---------- text processing ----------
+function decodeBytes(bytes, cand, ctype) {
+    let charset = (cand.charset || (/charset=([^;\s]+)/i.exec(ctype || '') || [])[1] || 'utf-8').toLowerCase();
+    if (charset === 'us-ascii') charset = 'utf-8';
+    let dec;
+    try { dec = new TextDecoder(charset); } catch (e) { charset = 'utf-8'; dec = new TextDecoder('utf-8'); }
+    let text = dec.decode(bytes);
+    if (charset === 'utf-8' && (text.match(/\uFFFD/g) || []).length > 3) {
+        text = new TextDecoder('windows-1252').decode(bytes);      // old Latin-1 files mislabelled as UTF-8
+    }
+    return text;
+}
+
+function stripHtmlToText(html) {
+    // DOMParser gives an inert document: no scripts run, no images load
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    doc.querySelectorAll('script,style,noscript,head,nav').forEach(function (n) { n.remove(); });
+    doc.querySelectorAll('br').forEach(function (n) { n.replaceWith('\n'); });
+    doc.querySelectorAll('p,div,h1,h2,h3,h4,h5,h6,li,tr,blockquote,pre,section').forEach(function (n) { n.append('\n\n'); });
+    const root = doc.body || doc.documentElement;
+    return (root.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function stripGutenbergBoilerplate(t) {
+    let start = 0, end = t.length;
+    const s = t.match(/\*{3}\s*START OF (?:THE|THIS) PROJECT GUTENBERG EBOOK[^\n]*\n/i);
+    if (s) start = s.index + s[0].length;
+    const e = t.search(/\*{3}\s*END OF (?:THE|THIS) PROJECT GUTENBERG EBOOK/i);
+    if (e > start) end = e;
+    const out = t.slice(start, end).trim();
+    return out.length > 1000 ? out : t;
+}
+
+// joins hard-wrapped lines into paragraphs so the reader makes proper pages
+function reflowText(t) {
+    return t.replace(/\r\n?/g, '\n')
+        .replace(/[ \t]+\n/g, '\n')
+        .replace(/\n{2,}/g, '\u0001')
+        .replace(/\n/g, ' ')
+        .replace(/\u0001/g, '\n\n')
+        .replace(/[ \t]{2,}/g, ' ')
+        .trim();
+}
+
+// throws DlError(kind:'invalid') if the payload is not a real book (proxy error page, PDF, zip, JSON error...)
+function finishText(raw, cand) {
+    let t = raw.replace(/^\uFEFF/, '');
+    const head = t.slice(0, 3000);
+    if (/^%PDF-/.test(head) || /^PK\u0003\u0004/.test(head)) throw new DlError('ടെക്സ്റ്റ് അല്ല', { kind: 'invalid' });
+    const htmlish = /<\s*(!doctype\s+html|html|head|body)\b/i.test(head);
+    if (cand.isHtml || htmlish) {
+        if (!cand.isHtml && t.length < 6000) throw new DlError('Proxy error page', { kind: 'invalid' });
+        t = stripHtmlToText(t);
+    }
+    if (t.length < 3000 && /^\s*[\{\[]/.test(t) && /"(error|message|status)"/i.test(t)) throw new DlError('Proxy error', { kind: 'invalid' });
+    if (cand.gutenberg) t = stripGutenbergBoilerplate(t);
+    t = reflowText(t);
+    if (t.length < DL.MIN_CHARS) throw new DlError('ഉള്ളടക്കം വളരെ ചെറുത്', { kind: 'invalid' });
+    return t;
+}
+
+// ---------- matching ----------
+const STOPWORDS = new Set(['the', 'and', 'for', 'with', 'from', 'into', 'that', 'this', 'his', 'her', 'its', 'are', 'was', 'not', 'por', 'del']);
+function normText(s) {
+    return String(s || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\u0d00-\u0d7f\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function toks(s) { return normText(s).split(' ').filter(function (w) { return w.length > 2 && !STOPWORDS.has(w); }); }
+
+function titleOverlap(want, got) {
+    const a = toks(want), b = new Set(toks(got));
+    if (!a.length) return 0;
+    let hit = 0;
+    a.forEach(function (w) { if (b.has(w)) hit++; });
+    return hit / a.length;
+}
+
+function authorKnown(author) { return !!author && !/^unknown/i.test(author) && toks(author).length > 0; }
+
+function authorOverlap(wantAuthor, gotAuthors) {
+    if (!authorKnown(wantAuthor)) return false;
+    const have = new Set(toks(gotAuthors));
+    return toks(wantAuthor).some(function (w) { return have.has(w); });
+}
+
+// cands: [{id, title, authorsText, downloads, formats}] → ranked acceptable matches (best first)
+function rankMatches(title, author, cands) {
+    const known = authorKnown(author);
+    const wantToks = toks(title).length;
+    const out = [];
+    cands.forEach(function (c) {
+        const ov = titleOverlap(title, c.title);
+        if (ov < 0.75) return;
+        const am = authorOverlap(author, c.authorsText);
+        const ok = am || !known || (ov === 1 && wantToks >= 2);
+        if (!ok) return;
+        const extra = Math.max(0, toks(c.title).length - toks(title).length);
+        const rank = ov * 10 + (am ? 5 : 0) - extra * 0.1 + Math.log10((c.downloads || 0) + 1) * 0.1;
+        out.push({ c: c, rank: rank });
+    });
+    out.sort(function (a, b) { return b.rank - a.rank; });
+    return out.map(function (x) { return x.c; });
+}
+
+// ---------- source 1: Project Gutenberg ----------
+function searchQueries(title, author) {
+    const qs = [];
+    const last = authorKnown(author) ? toks(author).slice(-1)[0] : '';
+    const shortT = String(title).split(/[:;(\[]/)[0].trim();
+    if (last) qs.push(shortT + ' ' + last);
+    qs.push(String(title));
+    if (shortT && shortT !== title) qs.push(shortT);
+    return qs.filter(function (q, i) { return q && qs.indexOf(q) === i; });
+}
+
+async function findGutenbergMatches(title, author, signal, stat) {
+    const queries = searchQueries(title, author);
+    // A) Gutendex (JSON)
+    for (let i = 0; i < queries.length; i++) {
+        try {
+            const data = await fetchJSON('https://gutendex.com/books/?search=' + encodeURIComponent(queries[i]), signal, stat);
+            const cands = ((data && data.results) || []).map(function (b) {
+                return { id: b.id, title: b.title || '', authorsText: (b.authors || []).map(function (a) { return a.name; }).join(' '), downloads: b.download_count || 0, formats: b.formats || {} };
+            });
+            const m = rankMatches(title, author, cands);
+            if (m.length) return m.slice(0, 2);
+        } catch (e) { if (signal.aborted) throw abortErr(); }
+    }
+    // B) gutenberg.org OPDS feed (XML) as a second opinion
+    try {
+        const doc = await fetchXML('https://www.gutenberg.org/ebooks/search.opds/?query=' + encodeURIComponent(queries[0]), signal, stat);
+        const entries = Array.prototype.slice.call(doc.getElementsByTagName('entry'));
+        const cands = [];
+        entries.forEach(function (en) {
+            const idEl = en.getElementsByTagName('id')[0];
+            const tEl = en.getElementsByTagName('title')[0];
+            const m = idEl && /\/ebooks\/(\d+)/.exec(idEl.textContent || '');
+            if (!m || !tEl) return;
+            cands.push({ id: m[1], title: tEl.textContent || '', authorsText: en.textContent || '', downloads: 0, formats: {} });
+        });
+        const m = rankMatches(title, author, cands);
+        if (m.length) return m.slice(0, 2);
+    } catch (e) { if (signal.aborted) throw abortErr(); }
+    return [];
+}
+
+function gutenbergCandidates(book) {
+    const f = book.formats || {};
+    const id = String(book.id || '').replace(/\D/g, '');
+    const out = [], seen = {};
+    function add(url, isHtml, charset) {
+        if (!url || seen[url]) return;
+        seen[url] = 1;
+        out.push({ url: url, isHtml: !!isHtml, charset: charset || '', label: 'Gutenberg', gutenberg: true });
+    }
+    function cs(k) { const m = /charset=([^;\s]+)/i.exec(k); return m ? m[1].toLowerCase() : ''; }
+    Object.keys(f).filter(function (k) { return k.indexOf('text/plain') === 0; })
+        .sort(function (a, b) { return (cs(a) === 'utf-8' ? 0 : 1) - (cs(b) === 'utf-8' ? 0 : 1); })
+        .forEach(function (k) { if (!/\.zip($|\?)/i.test(f[k])) add(f[k], false, cs(k)); });
+    if (id) {
+        add('https://www.gutenberg.org/cache/epub/' + id + '/pg' + id + '.txt', false, 'utf-8');
+        add('https://www.gutenberg.org/files/' + id + '/' + id + '-0.txt', false, 'utf-8');
+    }
+    Object.keys(f).filter(function (k) { return k.indexOf('text/html') === 0; })
+        .forEach(function (k) { add(f[k], true, cs(k)); });
+    if (id) add('https://www.gutenberg.org/cache/epub/' + id + '/pg' + id + '-images.html', true, 'utf-8');
+    return out;
+}
+
+// ---------- source 2: Internet Archive (open-access items only) ----------
+async function archiveTextCandidate(id, signal, stat) {
+    const meta = await fetchJSON('https://archive.org/metadata/' + encodeURIComponent(id), signal, stat);
+    if (!meta || !meta.files) return null;
+    const md = meta.metadata || {};
+    if (meta.is_dark || String(md['access-restricted-item']).toLowerCase() === 'true') return null;
+    let f = meta.files.find(function (x) { return /_djvu\.txt$/i.test(x.name); });
+    if (!f) f = meta.files.find(function (x) { return /\.txt$/i.test(x.name) && !/_meta|_files|_reviews|_archive/i.test(x.name); });
+    if (!f || (parseInt(f.size, 10) || 0) > DL.MAX_BYTES) return null;
+    return {
+        url: 'https://archive.org/download/' + encodeURIComponent(id) + '/' + f.name.split('/').map(encodeURIComponent).join('/'),
+        isHtml: false, charset: 'utf-8', label: 'Internet Archive', gutenberg: false
+    };
+}
+
+async function* archiveCandidates(entry, signal) {
+    const seen = new Set();
+    const meta = entry.meta || {};
+    const ids = [];
+    if (meta.access === 'public' && Array.isArray(meta.ia)) meta.ia.slice(0, 4).forEach(function (x) { ids.push(x); });
+
+    for (let i = 0; i < ids.length; i++) {
+        seen.add(ids[i]);
+        try { const c = await archiveTextCandidate(ids[i], signal, entry.lookupStat); if (c) yield c; }
+        catch (e) { if (signal.aborted) throw abortErr(); }
+    }
+
+    // search archive.org, excluding lending-library items
+    try {
+        const t = String(entry.title).replace(/["()\[\]:]/g, ' ').trim();
+        let q = 'title:("' + t + '") AND mediatype:texts AND -access-restricted-item:true';
+        if (authorKnown(entry.author)) q += ' AND creator:(' + toks(entry.author).slice(-1)[0] + ')';
+        const data = await fetchJSON('https://archive.org/advancedsearch.php?q=' + encodeURIComponent(q) +
+            '&fl[]=identifier&fl[]=title&rows=6&output=json', signal, entry.lookupStat);
+        const docs = (data && data.response && data.response.docs) || [];
+        for (let i = 0; i < docs.length; i++) {
+            const d = docs[i];
+            if (!d.identifier || seen.has(d.identifier)) continue;
+            if (titleOverlap(entry.title, Array.isArray(d.title) ? d.title[0] : d.title) < 0.75) continue;
+            seen.add(d.identifier);
+            try { const c = await archiveTextCandidate(d.identifier, signal, entry.lookupStat); if (c) yield c; }
+            catch (e) { if (signal.aborted) throw abortErr(); }
+        }
+    } catch (e) { if (signal.aborted) throw abortErr(); }
+}
+
+// lazily yields download candidates (so we don't search Archive if Gutenberg already works)
+async function* candidateStream(entry, signal) {
+    setCardStatus(entry.bookId, 'Gutenberg തിരയുന്നു...', 'bg-indigo-100 text-indigo-700');
+    let matches = [];
+    try { matches = await findGutenbergMatches(entry.title, entry.author, signal, entry.lookupStat); }
+    catch (e) { if (signal.aborted) throw abortErr(); }
+    for (let i = 0; i < matches.length; i++) {
+        const mf = matches[i].formats || {}, mid = String(matches[i].id || '').replace(/\D/g, '');
+        if (i === 0 && mid) {
+            entry.links.push({ label: 'EPUB', url: mf['application/epub+zip'] || ('https://www.gutenberg.org/ebooks/' + mid + '.epub.noimages') });
+            entry.links.push({ label: 'TXT', url: 'https://www.gutenberg.org/ebooks/' + mid + '.txt.utf-8' });
+        }
+        const list = gutenbergCandidates(matches[i]);
+        for (let j = 0; j < list.length; j++) yield list[j];
+    }
+    setCardStatus(entry.bookId, 'Internet Archive തിരയുന്നു...', 'bg-indigo-100 text-indigo-700');
+    for await (const c of archiveCandidates(entry, signal)) yield c;
+}
+
+// ---------- orchestration ----------
+async function fetchBookText(entry, cand, signal) {
+    let lastErr = null, notFound = 0;
+    const list = rankedTransports(entry.dead, cand.url);
+    for (let i = 0; i < list.length; i++) {
+        const t = list[i];
+        if (signal.aborted) throw abortErr();
+        try {
+            setCardStatus(entry.bookId, cand.label + ' · ' + t.id + '...', 'bg-indigo-100 text-indigo-700');
+            const got = await streamBytes(t.wrap(cand.url), entry, signal);
+            const text = finishText(decodeBytes(got.bytes, cand, got.ctype), cand);
+            rateTransport(t.id, cand.url, true);
+            return text;
+        } catch (e) {
+            if (signal.aborted || (e && e.name === 'AbortError')) throw abortErr();
+            lastErr = e;
+            entry.trace.push(t.id + ': ' + ((e && e.message) || 'error'));
+            const kind = (e && e.kind) || 'network';
+            if (kind === 'notfound') { if (++notFound >= 2) break; continue; }
+            if (kind === 'toobig') break;
+            if (kind !== 'invalid') { entry.dead.add(txKey(t.id, cand.url)); rateTransport(t.id, cand.url, false); }
+        }
+    }
+    throw lastErr || new DlError('Network error', { kind: 'network' });
+}
+
+async function downloadFromCandidates(entry, signal) {
+    let count = 0, lastErr = null, onlyMissing = true;
+    for await (const cand of candidateStream(entry, signal)) {
+        if (signal.aborted) throw abortErr();
+        count++;
+        entry.status = 'downloading';
+        setCardStatus(entry.bookId, cand.label + ' ഡൗൺലോഡ്...', 'bg-indigo-100 text-indigo-700');
+        try {
+            const text = await fetchBookText(entry, cand, signal);
+            return { text: text, cand: cand };
+        } catch (e) {
+            if (signal.aborted || (e && e.name === 'AbortError')) throw abortErr();
+            lastErr = e;
+            if (!e || (e.kind !== 'notfound' && e.kind !== 'invalid')) onlyMissing = false;
+            console.warn('Candidate failed:', cand.url, e && e.message);
+        }
+    }
+    if (count === 0) {
+        const st = entry.lookupStat || { ok: 0, fail: 0 };
+        if (st.fail > 0 && st.ok === 0) throw new DlError(MSG_NO_NET, { kind: 'network' });
+        if (st.fail > 0) throw new DlError(MSG_PARTIAL, { kind: 'network' });
+        throw new DlError(MSG_NOT_FOUND, { kind: 'notfound' });
+    }
+    if (onlyMissing) throw new DlError(MSG_NOT_FOUND, { kind: 'notfound' });
+    throw new DlError('സെർവറിൽ നിന്ന് ഡാറ്റ കിട്ടിയില്ല. ഇന്റർനെറ്റ് പരിശോധിച്ച് റീട്രൈ ചെയ്യുക. (' + ((lastErr && lastErr.message) || '') + ')', { kind: 'network' });
+}
+
+function markFailed(bookId, err) {
+    const entry = downloadManager[bookId];
+    if (!entry) return;
+    entry.status = 'failed';
+    console.error('Download failed:', err);
+    let msg = (err && err.message) || 'അജ്ഞാത പിശക്';
+    if (err && err.name === 'QuotaExceededError') msg = 'ഫോണിൽ സ്ഥലം തികയുന്നില്ല. ഉപയോഗിക്കാത്ത പുസ്തകങ്ങൾ ഡിലീറ്റ് ചെയ്യുക.';
+    setCardStatus(bookId, err && err.kind === 'notfound' ? 'ലഭ്യമല്ല' : 'പരാജയപ്പെട്ടു', 'bg-red-100 text-red-700');
+    const m = document.getElementById('dl_msg_' + bookId);
+    if (m) {
+        const tr = (entry.trace || []).slice(-6).join(' • ');
+        m.innerText = msg + (tr ? '\n[' + tr + ']' : '');
+        m.classList.remove('hidden');
+    }
+    const lk = document.getElementById('dl_links_' + bookId);
+    if (lk && entry.links && entry.links.length && !(err && err.kind === 'notfound')) {
+        lk.innerHTML = '<div class="w-full text-slate-500">ആപ്പിൽ ഡൗൺലോഡ് ആയില്ലെങ്കിൽ ബ്രൗസറിൽ നേരിട്ട് എടുക്കാം:</div>' +
+            entry.links.map(function (l) {
+                return '<a href="' + escapeHtml(l.url) + '" target="_blank" rel="noopener" class="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded-lg font-bold">' + escapeHtml(l.label) + ' ⬇</a>';
+            }).join('') +
+            '<div class="w-full text-slate-400">TXT ആണെങ്കിൽ: സേവ് ചെയ്ത ശേഷം ലൈബ്രറി → "ഫയൽ ആഡ് ചെയ്യാം".</div>';
+        lk.classList.remove('hidden');
+    }
+    const sp = document.getElementById('dl_speed_' + bookId);
+    if (sp) sp.innerText = '—';
+    const btn = document.getElementById('pause_btn_' + bookId);
+    if (btn) { btn.style.display = ''; btn.innerHTML = '<i class="fa-solid fa-rotate-right text-xs"></i>'; }
+}
+
+async function finalizeBook(entry, got) {
+    const bookId = entry.bookId;
+    updateProgressUI(bookId, entry.received, entry.total || entry.received, 0);
+    setCardStatus(bookId, 'സേവ് ചെയ്യുന്നു...', 'bg-amber-100 text-amber-800');
+    await saveBookToDB({
+        id: bookId,
+        title: entry.title,
+        author: entry.author,
+        content: got.text,
+        dateAdded: new Date().toLocaleDateString('ml-IN'),
+        source: got.cand.label
+    });
+    setCardStatus(bookId, 'പൂർത്തിയായി ✓ (' + formatBytes(got.text.length) + ')', 'bg-emerald-100 text-emerald-700');
+    const bar = document.getElementById('dl_bar_' + bookId);
+    if (bar) { bar.style.width = '100%'; bar.classList.remove('bg-indigo-600'); bar.classList.add('bg-emerald-500'); }
+    const pauseBtn = document.getElementById('pause_btn_' + bookId);
+    if (pauseBtn) pauseBtn.style.display = 'none';
+    delete downloadManager[bookId];
+    updateDownloadCountBadge();
+    loadLibrary();
+}
+
+async function runDownload(bookId) {
+    const entry = downloadManager[bookId];
+    if (!entry) return;
+    if (entry.controller) { try { entry.controller.abort(); } catch (e) {} }
+    const controller = new AbortController();
+    entry.controller = controller;
+    const run = ++entry.runId;
+    const signal = controller.signal;
+    entry.status = 'searching';
+    entry.received = 0; entry.total = 0; entry.speed = 0;
+    entry.dead = new Set();
+    entry.lookupStat = { ok: 0, fail: 0 };
+    entry.trace = [];
+    entry.links = [];
+    resetCardUI(bookId);
+    try {
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+            throw new DlError('ഇന്റർനെറ്റ് കണക്ഷൻ ഇല്ല. കണക്ഷൻ പരിശോധിച്ച ശേഷം റീട്രൈ അമർത്തുക.', { kind: 'offline' });
+        }
+        const got = await downloadFromCandidates(entry, signal);
+        if (entry.runId !== run || signal.aborted) return;
+        await finalizeBook(entry, got);
+    } catch (err) {
+        if (entry.runId !== run) return;
+        if (signal.aborted || (err && err.name === 'AbortError')) return;   // paused or cancelled
+        markFailed(bookId, err);
+    }
+}
+
+async function startStreamDownload(bookId, encodedTitle, encodedAuthor) {
+    let title, author;
+    try { title = decodeURIComponent(encodedTitle); author = decodeURIComponent(encodedAuthor); }
+    catch (e) { title = String(encodedTitle); author = String(encodedAuthor); }
+
+    const cur = downloadManager[bookId];
+    if (cur && (cur.status === 'downloading' || cur.status === 'searching')) { switchTab('downloads'); return; }
+    if (cur && cur.controller) { try { cur.controller.abort(); } catch (e) {} }
+
+    switchTab('downloads');
+    createDownloadCard(bookId, title, author);
+    downloadManager[bookId] = {
+        bookId: bookId, title: title, author: author, meta: bookMeta[bookId] || {},
+        controller: null, status: 'searching', runId: 0, received: 0, total: 0, speed: 0, dead: new Set()
+    };
+
+    // already in the library? don't download twice
+    try {
+        const existing = await getBookFromDB(bookId);
+        if (existing && existing.content) {
+            setCardStatus(bookId, 'ലൈബ്രറിയിൽ ഉണ്ട് ✓', 'bg-emerald-100 text-emerald-700');
+            const bar = document.getElementById('dl_bar_' + bookId);
+            if (bar) { bar.style.width = '100%'; bar.classList.replace('bg-indigo-600', 'bg-emerald-500'); }
+            const pb = document.getElementById('pause_btn_' + bookId);
+            if (pb) pb.style.display = 'none';
+            delete downloadManager[bookId];
+            return;
+        }
+    } catch (e) { /* ignore, just download */ }
+
+    runDownload(bookId);
+}
+
+function togglePauseResume(bookId) {
+    const entry = downloadManager[bookId];
+    if (!entry) return;
+    const btn = document.getElementById('pause_btn_' + bookId);
+
+    if (entry.status === 'downloading' || entry.status === 'searching') {
+        entry.status = 'paused';
+        if (entry.controller) entry.controller.abort();
+        setCardStatus(bookId, 'നിർത്തി', 'bg-amber-100 text-amber-800');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+        const speedEl = document.getElementById('dl_speed_' + bookId);
+        if (speedEl) speedEl.innerText = 'Paused';
+    } else if (entry.status === 'paused' || entry.status === 'failed') {
+        runDownload(bookId);      // resume / retry
+    }
+}
+
+function cancelDownload(bookId) {
+    const entry = downloadManager[bookId];
+    if (entry) {
+        entry.status = 'cancelled';
+        if (entry.controller) { try { entry.controller.abort(); } catch (e) {} }
+        delete downloadManager[bookId];
+    }
+    const card = document.getElementById('dl_card_' + bookId);
+    if (card) card.remove();
+    updateDownloadCountBadge();
+}
+
+function saveBookToDB(bookObj) {
+    return new Promise(function (resolve, reject) {
+        if (!db) { reject(new DlError('ഡാറ്റാബേസ് തയ്യാറല്ല. പേജ് റീലോഡ് ചെയ്യുക.', { kind: 'other' })); return; }
+        let tx;
+        try { tx = db.transaction('books', 'readwrite'); } catch (e) { reject(e); return; }
+        tx.objectStore('books').put(bookObj);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error || new Error('Save failed')); };
+        tx.onabort = function () { reject(tx.error || new Error('Save aborted')); };
+    });
+}
+
+function getBookFromDB(bookId) {
+    return new Promise(function (resolve, reject) {
+        if (!db) { resolve(null); return; }
+        try {
+            const req = db.transaction('books', 'readonly').objectStore('books').get(bookId);
+            req.onsuccess = function () { resolve(req.result || null); };
+            req.onerror = function () { reject(req.error); };
+        } catch (e) { reject(e); }
+    });
+}
+
+function deleteBookFromDB(bookId) {
+    const tx = db.transaction('books', 'readwrite');
+    tx.objectStore('books').delete(bookId);
+    tx.oncomplete = function () { loadLibrary(); };
+}
+
+// save the ebook as a .txt file on the phone
+function exportBook(bookId) {
+    getBookFromDB(bookId).then(function (b) {
+        if (!b) return;
+        const blob = new Blob([b.content || ''], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = (String(b.title || 'book').replace(/[\\\/:*?"<>|]+/g, ' ').trim().slice(0, 80) || 'book') + '.txt';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+    });
+}
+
+function loadLibrary() {
+    if (!db) return;
+    const tx = db.transaction('books', 'readonly');
+    const request = tx.objectStore('books').getAll();
+    request.onsuccess = function () {
+        const books = request.result;
+        const container = document.getElementById('libraryGrid');
+        if (!books || books.length === 0) {
+            container.innerHTML = '<div class="text-center py-12 text-slate-400 text-xs">ഓഫ്‌ലൈൻ ലൈബ്രറിയിൽ പുസ്തകങ്ങളൊന്നുമില്ല</div>';
+            return;
+        }
+        container.innerHTML = books.map(function (book) {
+            return '<div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">' +
+                '<div class="min-w-0 flex-1 pr-2">' +
+                '<h4 class="font-bold text-slate-800 text-sm truncate">' + escapeHtml(book.title) + '</h4>' +
+                '<p class="text-xs text-slate-500">' + escapeHtml(book.author) + ' • ' + escapeHtml(book.dateAdded) +
+                (book.content ? ' • ' + Math.round(book.content.length / 1000) + 'k chars' : '') + '</p></div>' +
+                '<div class="flex gap-2 shrink-0">' +
+                '<button onclick="openBookInReader(\'' + escapeHtml(book.id) + '\')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1">' +
+                '<i class="fa-solid fa-book-open"></i> വായിക്കുക</button>' +
+                '<button onclick="exportBook(\'' + escapeHtml(book.id) + '\')" title="ഫോണിൽ സേവ് ചെയ്യുക (.txt)" class="bg-slate-100 text-slate-600 hover:text-indigo-600 px-2.5 py-1.5 rounded-xl text-xs font-bold">' +
+                '<i class="fa-solid fa-file-arrow-down"></i></button>' +
+                '<button onclick="deleteBookFromDB(\'' + escapeHtml(book.id) + '\')" class="bg-slate-100 text-slate-600 hover:text-red-600 px-2.5 py-1.5 rounded-xl text-xs font-bold">' +
+                '<i class="fa-solid fa-trash"></i></button></div></div>';
+        }).join('');
+    };
+}
+
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function (e) {
+        await saveBookToDB({
+            id: 'local_' + Date.now(),
+            title: file.name.replace('.txt', ''),
+            author: 'Local File',
+            content: e.target.result,
+            dateAdded: new Date().toLocaleDateString('ml-IN')
+        });
+        loadLibrary();
+    };
+    reader.readAsText(file);
+}
+
+function openBookInReader(bookId) {
+    const tx = db.transaction('books', 'readonly');
+    const request = tx.objectStore('books').get(bookId);
+    request.onsuccess = function () {
+        activeBook = request.result;
+        if (!activeBook) return;
+        const rawText = activeBook.content || '';
+        bookPages = rawText.match(/[\s\S]{1,600}(?=\s|$)/g) || [rawText];
+        currentPageIndex = 0;
+        document.getElementById('activeBookBadge').classList.remove('hidden');
+        document.getElementById('activeBookTitleDisplay').innerText = activeBook.title;
+        switchTab('reader');
+        renderCurrentPage();
+    };
+}
+
+function renderCurrentPage() {
+    if (bookPages.length === 0) return;
+    const contentEl = document.getElementById('pageTextContent');
+    contentEl.style.fontSize = currentFontSize + 'px';
+    contentEl.innerText = bookPages[currentPageIndex];
+    document.getElementById('pageIndicator').innerText = 'താൾ ' + (currentPageIndex + 1) + ' / ' + bookPages.length;
+    document.getElementById('prevPageBtn').disabled = currentPageIndex === 0;
+    document.getElementById('nextPageBtn').disabled = currentPageIndex === bookPages.length - 1;
+    stopVoiceSpeech();
+}
+
+function nextPage() {
+    if (currentPageIndex < bookPages.length - 1) {
+        currentPageIndex++;
+        renderCurrentPage();
+    }
+}
+
+function prevPage() {
+    if (currentPageIndex > 0) {
+        currentPageIndex--;
+        renderCurrentPage();
+    }
+}
+
+function changeFontSize(delta) {
+    currentFontSize = Math.max(14, Math.min(28, currentFontSize + delta));
+    renderCurrentPage();
+}
+
+function cycleTheme() {
+    const themes = ['theme-light', 'theme-sepia', 'theme-dark'];
+    document.body.classList.remove(themes[currentThemeIndex]);
+    currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+    document.body.classList.add(themes[currentThemeIndex]);
+}
+
+// ═══════════════════════════════════════════════════════════
+// AI MALAYALAM TRANSLATOR
+// - Current-page translation
+// - Full-book translation in safe chunks
+// - IndexedDB checkpointing so a long book can resume
+// - OpenAI Responses API or any compatible proxy endpoint
+// ═══════════════════════════════════════════════════════════
+
+const AI_TRANSLATION = {
+    apiUrl: 'https://api.openai.com/v1/responses',
+    model: 'gpt-5.6-luna',
+    chunkSize: 5000,
+    delay: 1200
+};
+
+let translationJob = null;
+let translatedPages = {};
+let currentBookTranslationKey = '';
+
+function loadTranslationSettings() {
+    try {
+        const saved = JSON.parse(localStorage.getItem('vayanappura_ai_translation') || '{}');
+        Object.assign(AI_TRANSLATION, saved || {});
+    } catch (e) {}
+}
+
+function persistTranslationSettings() {
+    try { localStorage.setItem('vayanappura_ai_translation', JSON.stringify(AI_TRANSLATION)); } catch (e) {}
+}
+
+loadTranslationSettings();
+
+function openTranslationModal(mode) {
+    const modal = document.getElementById('translationModal');
+    const settings = document.getElementById('translationSettingsPanel');
+    const progress = document.getElementById('translationProgressPanel');
+    if (!modal) return;
+    document.getElementById('aiApiUrl').value = AI_TRANSLATION.apiUrl;
+    document.getElementById('aiApiKey').value = localStorage.getItem('vayanappura_ai_key') || '';
+    document.getElementById('aiModel').value = AI_TRANSLATION.model;
+    document.getElementById('aiChunkSize').value = String(AI_TRANSLATION.chunkSize);
+    document.getElementById('aiDelay').value = String(AI_TRANSLATION.delay);
+    settings.classList.toggle('hidden', mode === 'progress');
+    progress.classList.toggle('hidden', mode !== 'progress');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeTranslationModal() {
+    if (translationJob && translationJob.running) return;
+    const modal = document.getElementById('translationModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+function openTranslationSettings() {
+    openTranslationModal('settings');
+}
+
+function saveTranslationSettings() {
+    AI_TRANSLATION.apiUrl = (document.getElementById('aiApiUrl').value || '').trim() || 'https://api.openai.com/v1/responses';
+    AI_TRANSLATION.model = (document.getElementById('aiModel').value || '').trim() || 'gpt-5.6-luna';
+    AI_TRANSLATION.chunkSize = Math.max(1500, Math.min(10000, parseInt(document.getElementById('aiChunkSize').value, 10) || 5000));
+    AI_TRANSLATION.delay = Math.max(0, parseInt(document.getElementById('aiDelay').value, 10) || 1200);
+    try { localStorage.setItem('vayanappura_ai_key', document.getElementById('aiApiKey').value.trim()); } catch (e) {}
+    persistTranslationSettings();
+    alert('AI പരിഭാഷാ ക്രമീകരണങ്ങൾ സേവ് ചെയ്തു ✓');
+}
+
+function getTranslationApiKey() {
+    try { return (localStorage.getItem('vayanappura_ai_key') || '').trim(); } catch (e) { return ''; }
+}
+
+function sleep(ms) {
+    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+}
+
+function splitForTranslation(text, maxChars) {
+    const clean = String(text || '').replace(/\r\n?/g, '\n').trim();
+    if (!clean) return [];
+    const paragraphs = clean.split(/\n{2,}/);
+    const chunks = [];
+    let buf = '';
+
+    function pushBuf() {
+        if (buf.trim()) chunks.push(buf.trim());
+        buf = '';
+    }
+
+    paragraphs.forEach(function (para) {
+        para = para.trim();
+        if (!para) return;
+
+        // Very long paragraph: split at sentence/word boundaries.
+        while (para.length > maxChars) {
+            let cut = para.lastIndexOf('\n', maxChars);
+            if (cut < maxChars * 0.55) cut = para.lastIndexOf('. ', maxChars);
+            if (cut < maxChars * 0.55) cut = para.lastIndexOf(' ', maxChars);
+            if (cut < 1) cut = maxChars;
+            const piece = para.slice(0, cut).trim();
+            if (buf) pushBuf();
+            chunks.push(piece);
+            para = para.slice(cut).trim();
+        }
+
+        const candidate = buf ? buf + '\n\n' + para : para;
+        if (candidate.length <= maxChars) {
+            buf = candidate;
+        } else {
+            pushBuf();
+            buf = para;
+        }
+    });
+
+    pushBuf();
+    return chunks;
+}
+
+function extractAIText(data) {
+    if (data && typeof data.output_text === 'string' && data.output_text.trim()) return data.output_text.trim();
+    const parts = [];
+    if (data && Array.isArray(data.output)) {
+        data.output.forEach(function (item) {
+            if (!item || !Array.isArray(item.content)) return;
+            item.content.forEach(function (c) {
+                if (c && typeof c.text === 'string') parts.push(c.text);
+            });
+        });
+    }
+    return parts.join('\n').trim();
+}
+
+async function callAITranslator(sourceText, signal) {
+    const key = getTranslationApiKey();
+    if (!key) throw new Error('AI API Key നൽകിയിട്ടില്ല. ⚙️ കീ ചേർക്കുക.');
+
+    const prompt =
+        'Translate the following book text into natural, fluent Malayalam (ml-IN). ' +
+        'This is literary/book translation, not a summary. Translate everything faithfully. ' +
+        'Preserve paragraph breaks, dialogue, names, numbers, quotations, headings, punctuation and meaning. ' +
+        'Do not add explanations, notes, labels, or commentary. Output only the Malayalam translation.\\n\\n' +
+        'SOURCE TEXT:\\n' + sourceText;
+
+    const controller = new AbortController();
+    const timer = setTimeout(function () { controller.abort(); }, 90000);
+    const abortForward = function () { controller.abort(); };
+    if (signal) signal.addEventListener('abort', abortForward, { once: true });
+
+    try {
+        const res = await fetch(AI_TRANSLATION.apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + key
+            },
+            body: JSON.stringify({
+                model: AI_TRANSLATION.model,
+                input: prompt,
+                store: false
+            }),
+            signal: controller.signal
         });
 
-        // Initialize IndexedDB Storage
-        function initIndexedDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-                request.onupgradeneeded = (e) => {
-                    db = e.target.result;
-                    if (!db.objectStoreNames.contains('books')) {
-                        db.createObjectStore('books', { keyPath: 'id' });
-                    }
-                    if (!db.objectStoreNames.contains('translations')) {
-                        db.createObjectStore('translations', { keyPath: 'key' });
-                    }
-                };
-                request.onsuccess = (e) => {
-                    db = e.target.result;
-                    resolve();
-                };
-                request.onerror = (e) => reject(e);
+        if (!res.ok) {
+            let detail = '';
+            try { detail = await res.text(); } catch (e) {}
+            throw new Error('AI API HTTP ' + res.status + (detail ? ': ' + detail.slice(0, 300) : ''));
+        }
+
+        const data = await res.json();
+        const text = extractAIText(data);
+        if (!text) throw new Error('AI response-ൽ translation text ലഭിച്ചില്ല.');
+        return text;
+    } finally {
+        clearTimeout(timer);
+        if (signal) signal.removeEventListener('abort', abortForward);
+    }
+}
+
+// IndexedDB translation records
+function saveTranslationChunk(bookId, index, source, translated) {
+    return new Promise(function (resolve, reject) {
+        if (!db) return reject(new Error('Database unavailable'));
+        const tx = db.transaction('translations', 'readwrite');
+        tx.objectStore('translations').put({
+            key: bookId + ':ml:' + index,
+            bookId: bookId,
+            index: index,
+            source: source,
+            translated: translated,
+            updated: Date.now()
+        });
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error || new Error('Translation save failed')); };
+    });
+}
+
+function getTranslationChunks(bookId) {
+    return new Promise(function (resolve, reject) {
+        if (!db) return resolve([]);
+        const tx = db.transaction('translations', 'readonly');
+        const store = tx.objectStore('translations');
+        const req = store.getAll();
+        req.onsuccess = function () {
+            const rows = (req.result || [])
+                .filter(function (r) { return r && r.bookId === bookId && typeof r.index === 'number'; })
+                .sort(function (a, b) { return a.index - b.index; });
+            resolve(rows);
+        };
+        req.onerror = function () { reject(req.error); };
+    });
+}
+
+function clearBookTranslations(bookId) {
+    return new Promise(function (resolve, reject) {
+        if (!db) return resolve();
+        const tx = db.transaction('translations', 'readwrite');
+        const store = tx.objectStore('translations');
+        const req = store.getAll();
+        req.onsuccess = function () {
+            (req.result || []).forEach(function (r) {
+                if (r && (r.bookId === bookId || r.key === bookId + ':ml:meta')) store.delete(r.key);
             });
-        }
+        };
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error || new Error('Translation cleanup failed')); };
+    });
+}
 
-        // Tab Switcher
-        function switchTab(tabName) {
-            ['Search', 'Downloads', 'Library', 'Reader'].forEach(t => {
-                const tabEl = document.getElementById(`tab${t}`);
-                const navEl = document.getElementById(`nav${t}`);
-                if (t.toLowerCase() === tabName) {
-                    tabEl.classList.remove('hidden');
-                    navEl.className = 'flex flex-col items-center gap-1 text-indigo-600';
-                } else {
-                    tabEl.classList.add('hidden');
-                    navEl.className = 'flex flex-col items-center gap-1 text-slate-400';
-                }
-            });
-        }
+function setTranslationProgress(done, total, detail) {
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const bar = document.getElementById('translationProgressBar');
+    const pctEl = document.getElementById('translationProgressPercent');
+    const txt = document.getElementById('translationProgressText');
+    const det = document.getElementById('translationProgressDetail');
+    if (bar) bar.style.width = pct + '%';
+    if (pctEl) pctEl.innerText = pct + '%';
+    if (txt) txt.innerText = 'മലയാളത്തിലേക്ക് മാറ്റുന്നു...';
+    if (det) det.innerText = detail || ('Chunk ' + done + ' / ' + total);
+}
 
-        // Quick Search Filters
-        function quickFilter(query) {
-            document.getElementById('searchInput').value = query;
-            triggerSearch();
-        }
+async function translateFullBook() {
+    if (!activeBook || !activeBook.content) {
+        alert('ആദ്യം ഒരു പുസ്തകം തുറക്കുക.');
+        return;
+    }
+    if (translationJob && translationJob.running) {
+        openTranslationModal('progress');
+        return;
+    }
 
-        // Search Books using Open Library API
-        async function triggerSearch() {
-            const query = document.getElementById('searchInput').value.trim();
-            if (!query) return;
+    const key = getTranslationApiKey();
+    if (!key) {
+        openTranslationModal('settings');
+        alert('ആദ്യം AI API Key ചേർക്കുക.');
+        return;
+    }
 
-            const container = document.getElementById('searchResults');
-            container.innerHTML = `<div class="text-center py-8 text-slate-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2"></i><p class="text-xs">പുസ്തകങ്ങൾ തിരയുന്നു...</p></div>`;
+    const chunks = splitForTranslation(activeBook.content, AI_TRANSLATION.chunkSize);
+    if (!chunks.length) {
+        alert('പരിഭാഷപ്പെടുത്താൻ ഉള്ളടക്കം ഇല്ല.');
+        return;
+    }
 
-            try {
-                const res = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=12`);
-                const data = await res.json();
+    currentBookTranslationKey = activeBook.id + ':ml';
+    const existing = await getTranslationChunks(activeBook.id);
+    const existingMap = {};
+    existing.forEach(function (r) { existingMap[r.index] = r.translated; });
 
-                if (!data.docs || data.docs.length === 0) {
-                    container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs">പുസ്തകങ്ങളൊന്നും കണ്ടെത്താനായില്ല</div>`;
-                    return;
-                }
+    const missing = chunks.filter(function (_, i) { return !existingMap[i]; });
+    if (missing.length === 0) {
+        await finishTranslatedBook(activeBook, chunks.map(function (_, i) { return existingMap[i]; }));
+        return;
+    }
 
-                container.innerHTML = data.docs.map((book, idx) => {
-                    const bookId = book.key ? book.key.replace('/works/', '') : `bk_${Date.now()}_${idx}`;
-                    const title = book.title || 'Unknown Title';
-                    const author = book.author_name ? book.author_name[0] : 'Unknown Author';
-                    const cover = book.cover_i ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg` : 'https://via.placeholder.com/100x140?text=No+Cover';
+    const hasPartial = existing.length > 0;
+    if (hasPartial) {
+        const ok = confirm('ഈ പുസ്തകത്തിന്റെ ഭാഗിക Malayalam translation ഇതിനകം ഉണ്ട്. അവിടെ നിന്ന് തുടരണോ?');
+        if (!ok) return;
+    }
 
-                    return `
-                        <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex gap-3 items-center">
-                            <img src="${cover}" class="w-16 h-20 object-cover rounded-xl shrink-0 bg-slate-100">
-                            <div class="flex-1 min-w-0">
-                                <h3 class="font-bold text-slate-800 text-sm truncate">${title}</h3>
-                                <p class="text-xs text-slate-500 truncate">${author}</p>
-                                <div class="mt-2 flex gap-2">
-                                    <button onclick="startStreamDownload('${bookId}', '${encodeURIComponent(title)}', '${encodeURIComponent(author)}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1">
-                                        <i class="fa-solid fa-cloud-arrow-down"></i> ഡൗൺലോഡ്
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            } catch (err) {
-                container.innerHTML = `<div class="text-center py-8 text-red-500 text-xs">തിരയലിൽ പിശക് സംഭവിച്ചു</div>`;
+    translationJob = {
+        running: true,
+        paused: false,
+        cancelled: false,
+        controller: null,
+        bookId: activeBook.id,
+        chunks: chunks,
+        translated: existingMap,
+        nextIndex: 0
+    };
+
+    openTranslationModal('progress');
+
+    try {
+        for (let i = 0; i < chunks.length; i++) {
+            if (translationJob.cancelled) break;
+
+            while (translationJob.paused && !translationJob.cancelled) {
+                await sleep(300);
             }
-        }
-
-        // STREAM DOWNLOAD ENGINE WITH PAUSE, RESUME, AND DELETE CONTROLS
-        async function startStreamDownload(bookId, encodedTitle, encodedAuthor) {
-            const title = decodeURIComponent(encodedTitle);
-            const author = decodeURIComponent(encodedAuthor);
-
-            switchTab('downloads');
-            document.getElementById('emptyDownloadsMsg').classList.add('hidden');
-
-            const container = document.getElementById('downloadsList');
-            let itemCard = document.getElementById(`dl_card_${bookId}`);
-
-            if (!itemCard) {
-                itemCard = document.createElement('div');
-                itemCard.id = `dl_card_${bookId}`;
-                itemCard.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2';
-                container.prepend(itemCard);
-            }
-
-            itemCard.innerHTML = `
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h4 class="font-bold text-sm text-slate-800 truncate max-w-[200px]">${title}</h4>
-                        <p class="text-xs text-slate-500">${author}</p>
-                    </div>
-                    <span id="dl_status_${bookId}" class="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">ഡൗൺലോഡ് ചെയ്യുന്നു...</span>
-                </div>
-                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                    <div id="dl_bar_${bookId}" class="bg-indigo-600 h-full w-0 transition-all duration-200"></div>
-                </div>
-                <div class="flex justify-between items-center pt-1 text-xs">
-                    <span id="dl_percent_${bookId}" class="text-slate-500 font-bold">0%</span>
-                    <div class="flex gap-2">
-                        <button onclick="pauseDownload('${bookId}')" id="pause_btn_${bookId}" class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-lg font-bold">
-                            <i class="fa-solid fa-pause"></i>
-                        </button>
-                        <button onclick="deleteDownloadCard('${bookId}')" class="bg-red-100 text-red-700 px-2.5 py-1 rounded-lg font-bold">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            const controller = new AbortController();
-            activeDownloads[bookId] = controller;
-
-            try {
-                // Fetch full text stream with fallback proxies
-                const mirrorUrl = `https://gutendex.com/books/?search=${encodeURIComponent(title)}`;
-                const res = await fetch(mirrorUrl, { signal: controller.signal });
-                const data = await res.json();
-
-                let downloadUrl = null;
-                if (data.results && data.results.length > 0 && data.results[0].formats['text/plain; charset=utf-8']) {
-                    downloadUrl = data.results[0].formats['text/plain; charset=utf-8'];
-                }
-
-                // Simulate chunk stream if direct text URL is proxy protected
-                let fullText = "";
-                const totalChunks = 20;
-
-                for (let i = 1; i <= totalChunks; i++) {
-                    if (controller.signal.aborted) return;
-
-                    await new Promise(r => setTimeout(r, 120)); // Stream chunk interval
-                    const percent = Math.round((i / totalChunks) * 100);
-                    
-                    document.getElementById(`dl_bar_${bookId}`).style.width = `${percent}%`;
-                    document.getElementById(`dl_percent_${bookId}`).innerText = `${percent}%`;
-
-                    fullText += `Chapter ${i}\n\nThis is the complete authentic text of ${title} written by ${author}. Continuous reading page ${i} provides full paragraph details formatted cleanly into pages.\n\n`;
-                }
-
-                // Complete Download and Save to IndexedDB
-                document.getElementById(`dl_status_${bookId}`).className = 'text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full';
-                document.getElementById(`dl_status_${bookId}`).innerText = 'പൂർത്തിയായി (100%)';
-
-                const bookObj = {
-                    id: bookId,
-                    title: title,
-                    author: author,
-                    content: fullText,
-                    dateAdded: new Date().toLocaleDateString('ml-IN')
-                };
-
-                await saveBookToDB(bookObj);
-                delete activeDownloads[bookId];
-                loadLibrary();
-
-            } catch (err) {
-                if (err.name === 'AbortError') {
-                    document.getElementById(`dl_status_${bookId}`).className = 'text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full';
-                    document.getElementById(`dl_status_${bookId}`).innerText = 'നിർത്തിവെച്ചു';
-                } else {
-                    document.getElementById(`dl_status_${bookId}`).className = 'text-[10px] font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded-full';
-                    document.getElementById(`dl_status_${bookId}`).innerText = 'തടസ്സപ്പെട്ടു';
-                }
-            }
-        }
-
-        // Pause / Resume Download Control
-        function pauseDownload(bookId) {
-            if (activeDownloads[bookId]) {
-                activeDownloads[bookId].abort();
-                delete activeDownloads[bookId];
-                const btn = document.getElementById(`pause_btn_${bookId}`);
-                btn.innerHTML = `<i class="fa-solid fa-play"></i>`;
-            }
-        }
-
-        // Delete Download Item
-        function deleteDownloadCard(bookId) {
-            if (activeDownloads[bookId]) {
-                activeDownloads[bookId].abort();
-                delete activeDownloads[bookId];
-            }
-            const card = document.getElementById(`dl_card_${bookId}`);
-            if (card) card.remove();
-            deleteBookFromDB(bookId);
-        }
-
-        // SAVE BOOK TO INDEXEDDB
-        function saveBookToDB(bookObj) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction('books', 'readwrite');
-                const store = tx.objectStore('books');
-                store.put(bookObj);
-                tx.oncomplete = () => resolve();
-                tx.onerror = (e) => reject(e);
-            });
-        }
-
-        // DELETE BOOK FROM DB
-        function deleteBookFromDB(bookId) {
-            const tx = db.transaction('books', 'readwrite');
-            tx.objectStore('books').delete(bookId);
-            tx.oncomplete = () => loadLibrary();
-        }
-
-        // LOAD OFFLINE LIBRARY
-        function loadLibrary() {
-            if (!db) return;
-            const tx = db.transaction('books', 'readonly');
-            const store = tx.objectStore('books');
-            const request = store.getAll();
-
-            request.onsuccess = () => {
-                const books = request.result;
-                const container = document.getElementById('libraryGrid');
-
-                if (!books || books.length === 0) {
-                    container.innerHTML = `<div class="text-center py-12 text-slate-400 text-xs">ഓഫ്‌ലൈൻ ലൈബ്രറിയിൽ പുസ്തകങ്ങളൊന്നുമില്ല</div>`;
-                    return;
-                }
-
-                container.innerHTML = books.map(book => `
-                    <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
-                        <div class="min-w-0 flex-1 pr-2">
-                            <h4 class="font-bold text-slate-800 text-sm truncate">${book.title}</h4>
-                            <p class="text-xs text-slate-500">${book.author} • ${book.dateAdded}</p>
-                        </div>
-                        <div class="flex gap-2 shrink-0">
-                            <button onclick="openBookInReader('${book.id}')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1">
-                                <i class="fa-solid fa-book-open"></i> വായിക്കുക
-                            </button>
-                            <button onclick="deleteBookFromDB('${book.id}')" class="bg-slate-100 text-slate-600 hover:text-red-600 px-2.5 py-1.5 rounded-xl text-xs font-bold">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-            };
-        }
-
-        // LOCAL FILE UPLOAD HANDLER (.txt)
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const text = e.target.result;
-                const bookObj = {
-                    id: `local_${Date.now()}`,
-                    title: file.name.replace('.txt', ''),
-                    author: 'Local File',
-                    content: text,
-                    dateAdded: new Date().toLocaleDateString('ml-IN')
-                };
-                await saveBookToDB(bookObj);
-                loadLibrary();
-            };
-            reader.readAsText(file);
-        }
-
-        // OPEN BOOK IN READER & DYNAMIC PAGINATION
-        async function openBookInReader(bookId) {
-            const tx = db.transaction('books', 'readonly');
-            const store = tx.objectStore('books');
-            const request = store.get(bookId);
-
-            request.onsuccess = () => {
-                activeBook = request.result;
-                if (!activeBook) return;
-
-                // Paginate full text into ~600 character pages
-                const rawText = activeBook.content;
-                bookPages = rawText.match(/.{1,600}(?=\s|$)/g) || [rawText];
-                currentPageIndex = 0;
-
-                document.getElementById('activeBookBadge').classList.remove('hidden');
-                document.getElementById('activeBookTitleDisplay').innerText = activeBook.title;
-
-                switchTab('reader');
-                renderCurrentPage();
-            };
-        }
-
-        // RENDER PAGE CONTENT
-        function renderCurrentPage() {
-            if (bookPages.length === 0) return;
-
-            const text = bookPages[currentPageIndex];
-            const contentEl = document.getElementById('pageTextContent');
-            contentEl.style.fontSize = `${currentFontSize}px`;
-            contentEl.innerText = text;
-
-            document.getElementById('pageIndicator').innerText = `താൾ ${currentPageIndex + 1} / ${bookPages.length}`;
-            document.getElementById('prevPageBtn').disabled = currentPageIndex === 0;
-            document.getElementById('nextPageBtn').disabled = currentPageIndex === bookPages.length - 1;
-
-            stopVoiceSpeech();
-        }
-
-        function nextPage() {
-            if (currentPageIndex < bookPages.length - 1) {
-                currentPageIndex++;
-                renderCurrentPage();
-            }
-        }
-
-        function prevPage() {
-            if (currentPageIndex > 0) {
-                currentPageIndex--;
-                renderCurrentPage();
-            }
-        }
-
-        function changeFontSize(delta) {
-            currentFontSize = Math.max(14, Math.min(28, currentFontSize + delta));
-            renderCurrentPage();
-        }
-
-        function cycleTheme() {
-            const themes = ['theme-light', 'theme-sepia', 'theme-dark'];
-            document.body.classList.remove(themes[currentThemeIndex]);
-            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-            document.body.classList.add(themes[currentThemeIndex]);
-        }
-
-        // FAST MINI AI MALAYALAM TRANSLATOR
-        async function translateCurrentPage() {
-            if (!bookPages[currentPageIndex]) return;
-
-            const rawText = bookPages[currentPageIndex];
-            const translateBtn = document.getElementById('translateBtn');
-            translateBtn.disabled = true;
-            translateBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> മാറ്റുന്നു...`;
-
-            try {
-                // Free Translation API Call
-                const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(rawText)}&langpair=en|ml`);
-                const data = await res.json();
-
-                if (data.responseData && data.responseData.translatedText) {
-                    document.getElementById('pageTextContent').innerText = data.responseData.translatedText;
-                    document.getElementById('voiceControlBar').classList.remove('hidden');
-                }
-            } catch (err) {
-                alert('പരിഭാഷപ്പെടുത്തുന്നതിൽ തടസ്സം നേരിട്ടു');
-            } finally {
-                translateBtn.disabled = false;
-                translateBtn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> മലയാളത്തിലേക്ക് മാറ്റുക`;
-            }
-        }
-
-        // MALAYALAM VOICE TTS ENGINE
-        function toggleVoiceSpeech() {
-            const text = document.getElementById('pageTextContent').innerText;
-            if (!text) return;
-
-            if (synth.speaking) {
-                synth.pause();
-                document.getElementById('voicePlayBtn').innerHTML = `<i class="fa-solid fa-play"></i>`;
-                return;
+            if (translationJob.cancelled) break;
+            if (translationJob.translated[i]) {
+                setTranslationProgress(i + 1, chunks.length, 'ഇതിനകം പൂർത്തിയായ ഭാഗം പരിശോധിക്കുന്നു...');
+                continue;
             }
 
-            speechUtterance = new SpeechSynthesisUtterance(text);
-            speechUtterance.lang = 'ml-IN';
-            speechUtterance.pitch = 1.1; // Female Tone
-            speechUtterance.rate = 0.9;
+            translationJob.nextIndex = i;
+            translationJob.controller = new AbortController();
+            setTranslationProgress(i, chunks.length, 'AI translation: ഭാഗം ' + (i + 1) + ' / ' + chunks.length);
 
-            speechUtterance.onend = () => stopVoiceSpeech();
+            const translated = await callAITranslator(chunks[i], translationJob.controller.signal);
+            translationJob.translated[i] = translated;
 
-            synth.speak(speechUtterance);
-            document.getElementById('voicePlayBtn').innerHTML = `<i class="fa-solid fa-pause"></i>`;
+            // Save every completed chunk, so a browser close/network failure can resume.
+            await saveTranslationChunk(activeBook.id, i, chunks[i], translated);
+            setTranslationProgress(i + 1, chunks.length, 'സേവ് ചെയ്തു: ഭാഗം ' + (i + 1) + ' / ' + chunks.length);
+
+            if (i < chunks.length - 1) await sleep(AI_TRANSLATION.delay);
         }
 
-        function stopVoiceSpeech() {
-            if (synth.speaking) {
-                synth.cancel();
+        if (!translationJob.cancelled) {
+            const result = chunks.map(function (_, i) { return translationJob.translated[i] || ''; });
+            if (result.every(Boolean)) {
+                await finishTranslatedBook(activeBook, result);
+            } else {
+                alert('പരിഭാഷ ഭാഗികമായി പൂർത്തിയായി. വീണ്ടും Translate അമർത്തിയാൽ ബാക്കിയുള്ള ഭാഗങ്ങളിൽ നിന്ന് തുടരും.');
             }
-            document.getElementById('voiceControlBar').classList.add('hidden');
         }
-    </script>
+    } catch (err) {
+        if (!translationJob.cancelled) {
+            console.error(err);
+            alert('AI പരിഭാഷയിൽ തടസ്സം: ' + (err && err.message ? err.message : err));
+        }
+    } finally {
+        if (translationJob) {
+            translationJob.running = false;
+            translationJob.controller = null;
+        }
+        const pauseBtn = document.getElementById('translationPauseBtn');
+        if (pauseBtn) pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i> Pause';
+    }
+}
+
+async function finishTranslatedBook(book, translatedChunks) {
+    const translatedContent = translatedChunks.join('\n\n').trim();
+    const translatedId = book.id + '_ml';
+    await saveBookToDB({
+        id: translatedId,
+        title: 'മലയാളം • ' + (book.title || 'പുസ്തകം'),
+        author: book.author || 'AI Translation',
+        content: translatedContent,
+        dateAdded: new Date().toLocaleDateString('ml-IN'),
+        source: 'AI Malayalam Translation',
+        originalBookId: book.id
+    });
+
+    const allPages = translatedContent.match(/[\s\S]{1,600}(?=\s|$)/g) || [translatedContent];
+    activeBook = await getBookFromDB(translatedId);
+    bookPages = allPages;
+    currentPageIndex = 0;
+    document.getElementById('activeBookTitleDisplay').innerText = activeBook.title;
+    renderCurrentPage();
+
+    setTranslationProgress(translatedChunks.length, translatedChunks.length, 'പൂർണ്ണമായി പൂർത്തിയായി ✓');
+    alert('മുഴുവൻ പുസ്തകവും Malayalam-ലേക്ക് മാറ്റി. പുതിയ Malayalam പുസ്തകം ലൈബ്രറിയിൽ സേവ് ചെയ്തു ✓');
+    loadLibrary();
+
+    setTimeout(function () {
+        if (!translationJob || !translationJob.running) closeTranslationModal();
+    }, 800);
+}
+
+function toggleTranslationPause() {
+    if (!translationJob || !translationJob.running) return;
+    translationJob.paused = !translationJob.paused;
+    const btn = document.getElementById('translationPauseBtn');
+    if (btn) btn.innerHTML = translationJob.paused
+        ? '<i class="fa-solid fa-play"></i> തുടരുക'
+        : '<i class="fa-solid fa-pause"></i> Pause';
+    if (translationJob.paused && translationJob.controller) {
+        try { translationJob.controller.abort(); } catch (e) {}
+    }
+}
+
+function cancelFullBookTranslation() {
+    if (!translationJob) {
+        closeTranslationModal();
+        return;
+    }
+    translationJob.cancelled = true;
+    translationJob.paused = false;
+    if (translationJob.controller) {
+        try { translationJob.controller.abort(); } catch (e) {}
+    }
+    translationJob.running = false;
+    document.getElementById('translationProgressText').innerText = 'നിർത്തി';
+    setTimeout(closeTranslationModal, 300);
+}
+
+async function translateCurrentPage() {
+    if (!bookPages[currentPageIndex]) return;
+    const rawText = bookPages[currentPageIndex];
+    const translateBtn = document.getElementById('translateBtn');
+    translateBtn.disabled = true;
+    translateBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> AI...';
+
+    try {
+        const translated = await callAITranslator(rawText, new AbortController().signal);
+        document.getElementById('pageTextContent').innerText = translated;
+        document.getElementById('voiceControlBar').classList.remove('hidden');
+    } catch (err) {
+        // Keep the old free fallback for a quick page translation if AI is not configured.
+        try {
+            const res = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(rawText) + '&langpair=en|ml');
+            const data = await res.json();
+            if (data.responseData && data.responseData.translatedText) {
+                document.getElementById('pageTextContent').innerText = data.responseData.translatedText;
+                document.getElementById('voiceControlBar').classList.remove('hidden');
+            } else {
+                throw err;
+            }
+        } catch (fallbackErr) {
+            alert('പരിഭാഷപ്പെടുത്തുന്നതിൽ തടസ്സം: ' + (err && err.message ? err.message : 'API error'));
+        }
+    } finally {
+        translateBtn.disabled = false;
+        translateBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> ഈ പേജ്';
+    }
+}
+
+function toggleVoiceSpeech() {
+    const text = document.getElementById('pageTextContent').innerText;
+    if (!text) return;
+    if (synth.speaking) {
+        synth.pause();
+        document.getElementById('voicePlayBtn').innerHTML = '<i class="fa-solid fa-play"></i>';
+        return;
+    }
+    speechUtterance = new SpeechSynthesisUtterance(text);
+    speechUtterance.lang = 'ml-IN';
+    speechUtterance.pitch = 1.1;
+    speechUtterance.rate = 0.9;
+    speechUtterance.onend = function () { stopVoiceSpeech(); };
+    synth.speak(speechUtterance);
+    document.getElementById('voicePlayBtn').innerHTML = '<i class="fa-solid fa-pause"></i>';
+}
+
+function stopVoiceSpeech() {
+    if (synth.speaking) synth.cancel();
+    document.getElementById('voiceControlBar').classList.add('hidden');
+}
+</script>
 </body>
 </html>
