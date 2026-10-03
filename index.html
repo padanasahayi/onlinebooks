@@ -313,55 +313,222 @@ const NO_COVER = 'data:image/svg+xml;utf8,' + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="140"><rect width="100" height="140" fill="#e2e8f0"/>' +
     '<text x="50" y="76" font-size="12" text-anchor="middle" fill="#94a3b8" font-family="sans-serif">No Cover</text></svg>');
 
-const bookMeta = {};      // bookId -> { ia:[], access:'public'|... }
+const bookMeta = {};      // bookId -> { ia:[], access:'public'|..., gutId, formats }
 let searchSeq = 0;
 let searchCtrl = null;
+
+function hasPlainText(formats) {
+    if (!formats) return false;
+    return !!(formats['text/plain; charset=utf-8'] || formats['text/plain; charset=us-ascii'] || formats['text/plain'] ||
+        formats['text/html; charset=utf-8'] || formats['text/html']);
+}
+
+function gutCover(book) {
+    if (book.formats) {
+        const img = book.formats['image/jpeg'];
+        if (img) return img;
+    }
+    if (book.id) return 'https://www.gutenberg.org/cache/epub/' + book.id + '/pg' + book.id + '.cover.medium.jpg';
+    return NO_COVER;
+}
+
+function rankBadge(rank) {
+    if (rank <= 3) return '<span class="text-[10px] font-black text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md">#' + rank + '</span>';
+    return '<span class="text-[10px] font-bold text-slate-400 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded-md">#' + rank + '</span>';
+}
+
+function renderBookCard(item, rank) {
+    const title = item.title || 'Unknown';
+    const author = item.author || 'Unknown';
+    const bookId = item.id;
+    bookMeta[bookId] = item.meta || {};
+    const cover = item.cover || NO_COVER;
+    const badges = [];
+    if (item.freeDownload) {
+        badges.push('<span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold">✓ Free TXT</span>');
+    }
+    if (item.hasEpub) {
+        badges.push('<span class="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full font-bold">EPUB</span>');
+    }
+    if (item.borrowOnly) {
+        badges.push('<span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full font-bold">Borrow</span>');
+    }
+    if (item.downloads) {
+        badges.push('<span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full font-bold">' +
+            (item.downloads > 999 ? (item.downloads / 1000).toFixed(1) + 'k' : item.downloads) + ' ↓</span>');
+    }
+    if (item.year) {
+        badges.push('<span class="text-[10px] text-slate-400">' + item.year + '</span>');
+    }
+    const sourceLabel = item.source === 'gutenberg'
+        ? '<span class="text-[10px] text-emerald-600 font-semibold">Project Gutenberg</span>'
+        : (item.source === 'openlibrary'
+            ? '<span class="text-[10px] text-slate-400">Open Library</span>'
+            : '');
+
+    const btnClass = item.freeDownload
+        ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+        : 'bg-slate-200 text-slate-600 hover:bg-slate-300';
+    const btnLabel = item.freeDownload
+        ? '<i class="fa-solid fa-bolt text-amber-300"></i> ഡൗൺലോഡ്'
+        : '<i class="fa-solid fa-cloud-arrow-down"></i> ശ്രമിക്കുക';
+
+    return '<div class="bg-white p-3 rounded-2xl shadow-sm border ' +
+        (item.freeDownload ? 'border-emerald-200' : 'border-slate-200') + ' flex gap-3 items-start">' +
+        '<div class="relative shrink-0">' +
+        '<img src="' + cover + '" loading="lazy" onerror="this.onerror=null;this.src=\'' + NO_COVER + '\'" class="w-16 h-[5.5rem] object-cover rounded-xl bg-slate-100">' +
+        '<div class="absolute -top-1.5 -left-1.5">' + rankBadge(rank) + '</div></div>' +
+        '<div class="flex-1 min-w-0">' +
+        '<h3 class="font-bold text-slate-800 text-sm leading-snug line-clamp-2">' + escapeHtml(title) + '</h3>' +
+        '<p class="text-xs text-slate-500 truncate mt-0.5">' + escapeHtml(author) + '</p>' +
+        '<div class="flex flex-wrap gap-1 mt-1.5">' + badges.join('') + '</div>' +
+        '<div class="mt-1">' + sourceLabel + '</div>' +
+        '<div class="mt-2 flex gap-2">' +
+        '<button onclick="startStreamDownload(\'' + bookId + '\',\'' + enc(title) + '\',\'' + enc(author) + '\')" class="' + btnClass + ' px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1">' +
+        btnLabel + '</button>' +
+        (item.previewUrl
+            ? '<a href="' + escapeHtml(item.previewUrl) + '" target="_blank" rel="noopener" class="bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-xl text-xs font-bold">Preview ↗</a>'
+            : '') +
+        '</div></div></div>';
+}
+
+async function searchGutendex(query, signal) {
+    try {
+        const data = await fetchJSON('https://gutendex.com/books/?search=' + encodeURIComponent(query), signal);
+        const results = (data && data.results) || [];
+        return results.map(function (b) {
+            const formats = b.formats || {};
+            const free = hasPlainText(formats);
+            const authors = (b.authors || []).map(function (a) { return a.name; }).filter(Boolean);
+            const author = authors[0] || 'Unknown Author';
+            const id = 'pg_' + b.id;
+            return {
+                id: id,
+                title: b.title || 'Unknown',
+                author: author,
+                cover: gutCover(b),
+                freeDownload: free,
+                hasEpub: !!(formats['application/epub+zip']),
+                borrowOnly: false,
+                downloads: b.download_count || 0,
+                year: '',
+                source: 'gutenberg',
+                score: (free ? 1000000 : 0) + (b.download_count || 0),
+                previewUrl: 'https://www.gutenberg.org/ebooks/' + b.id,
+                meta: { gutId: b.id, formats: formats, access: free ? 'public' : '', ia: [] }
+            };
+        }).filter(function (x) { return x.freeDownload; }); // only books with actual text/html to download
+    } catch (e) {
+        if (e && e.name === 'AbortError') throw e;
+        console.warn('Gutendex search failed', e);
+        return [];
+    }
+}
+
+async function searchOpenLibrary(query, signal) {
+    try {
+        const data = await fetchJSON(
+            'https://openlibrary.org/search.json?q=' + encodeURIComponent(query) +
+            '&limit=24&fields=key,title,author_name,cover_i,ebook_access,ia,first_publish_year,edition_count,ratings_average,already_read_count',
+            signal
+        );
+        const docs = (data && data.docs) || [];
+        return docs.map(function (book, idx) {
+            const bookId = book.key
+                ? String(book.key).replace('/works/', '').replace(/[^A-Za-z0-9_\-]/g, '')
+                : ('ol_' + Date.now() + '_' + idx);
+            const free = book.ebook_access === 'public';
+            const title = book.title || 'Unknown Title';
+            const author = book.author_name ? book.author_name[0] : 'Unknown Author';
+            const ratings = book.ratings_average || 0;
+            const reads = book.already_read_count || 0;
+            return {
+                id: bookId,
+                title: title,
+                author: author,
+                cover: book.cover_i ? 'https://covers.openlibrary.org/b/id/' + book.cover_i + '-M.jpg' : NO_COVER,
+                freeDownload: free,
+                hasEpub: free,
+                borrowOnly: !free && (book.ebook_access === 'borrowable' || (book.ia && book.ia.length)),
+                downloads: Math.round(reads || 0),
+                year: book.first_publish_year || '',
+                source: 'openlibrary',
+                // free first, then ratings/popularity, keep original relevance order as tie-break
+                score: (free ? 500000 : 0) + (ratings * 1000) + Math.min(reads, 50000) + (24 - idx),
+                previewUrl: book.key ? 'https://openlibrary.org' + book.key : '',
+                meta: { ia: book.ia || [], access: book.ebook_access || '', year: book.first_publish_year || '' }
+            };
+        });
+    } catch (e) {
+        if (e && e.name === 'AbortError') throw e;
+        console.warn('Open Library search failed', e);
+        return [];
+    }
+}
+
+function dedupeBooks(list) {
+    const seen = new Set();
+    const out = [];
+    list.forEach(function (b) {
+        const key = normText(b.title).slice(0, 48) + '|' + normText(b.author).split(' ').slice(-1)[0];
+        if (seen.has(key)) return;
+        seen.add(key);
+        out.push(b);
+    });
+    return out;
+}
 
 async function triggerSearch() {
     const query = document.getElementById('searchInput').value.trim();
     if (!query) return;
     const container = document.getElementById('searchResults');
-    container.innerHTML = '<div class="text-center py-8 text-slate-400"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2"></i><p class="text-xs">പുസ്തകങ്ങൾ തിരയുന്നു...</p></div>';
+    container.innerHTML =
+        '<div class="text-center py-8 text-slate-400">' +
+        '<i class="fa-solid fa-spinner animate-spin text-2xl mb-2"></i>' +
+        '<p class="text-xs">Cloud / online ebooks തിരയുന്നു...</p>' +
+        '<p class="text-[10px] mt-1 text-slate-300">Gutenberg + Open Library · free first</p></div>';
 
     const seq = ++searchSeq;
     if (searchCtrl) { try { searchCtrl.abort(); } catch (e) {} }
     searchCtrl = new AbortController();
+    const signal = searchCtrl.signal;
 
     try {
-        const data = await fetchJSON('https://openlibrary.org/search.json?q=' + encodeURIComponent(query) + '&limit=20', searchCtrl.signal);
+        // Parallel: Gutenberg (best for full free text) + Open Library (broader catalog)
+        const pair = await Promise.all([
+            searchGutendex(query, signal),
+            searchOpenLibrary(query, signal)
+        ]);
         if (seq !== searchSeq) return;
-        let docs = (data && data.docs) || [];
-        if (docs.length === 0) {
+
+        let gut = pair[0] || [];
+        let ol = pair[1] || [];
+
+        // Prefer Gutenberg free books; fill with OL free, then OL borrowable
+        const freeOl = ol.filter(function (x) { return x.freeDownload; });
+        const otherOl = ol.filter(function (x) { return !x.freeDownload; });
+
+        let merged = dedupeBooks(gut.concat(freeOl).concat(otherOl));
+        merged.sort(function (a, b) { return b.score - a.score; });
+        merged = merged.slice(0, 20);
+
+        if (merged.length === 0) {
             container.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs">പുസ്തകങ്ങളൊന്നും കണ്ടെത്താനായില്ല</div>';
             return;
         }
-        // free-to-read books first (those are the ones that will actually download)
-        docs = docs.map(function (d, i) { return { d: d, i: i }; })
-            .sort(function (a, b) {
-                return ((b.d.ebook_access === 'public') - (a.d.ebook_access === 'public')) || (a.i - b.i);
-            })
-            .map(function (x) { return x.d; });
 
-        container.innerHTML = docs.map(function (book, idx) {
-            const bookId = book.key ? String(book.key).replace('/works/', '').replace(/[^A-Za-z0-9_\-]/g, '') : ('bk_' + Date.now() + '_' + idx);
-            const title = book.title || 'Unknown Title';
-            const author = book.author_name ? book.author_name[0] : 'Unknown Author';
-            bookMeta[bookId] = { ia: book.ia || [], access: book.ebook_access || '', year: book.first_publish_year || '' };
-            const cover = book.cover_i ? 'https://covers.openlibrary.org/b/id/' + book.cover_i + '-M.jpg' : NO_COVER;
-            const free = book.ebook_access === 'public'
-                ? '<span class="ml-1 text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold">സൗജന്യം</span>' : '';
-            return '<div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex gap-3 items-center">' +
-                '<img src="' + cover + '" loading="lazy" onerror="this.onerror=null;this.src=NO_COVER" class="w-16 h-20 object-cover rounded-xl shrink-0 bg-slate-100">' +
-                '<div class="flex-1 min-w-0">' +
-                '<h3 class="font-bold text-slate-800 text-sm truncate">' + escapeHtml(title) + free + '</h3>' +
-                '<p class="text-xs text-slate-500 truncate">' + escapeHtml(author) + '</p>' +
-                '<div class="mt-2 flex gap-2">' +
-                '<button onclick="startStreamDownload(\'' + bookId + '\',\'' + enc(title) + '\',\'' + enc(author) + '\')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1">' +
-                '<i class="fa-solid fa-cloud-arrow-down"></i> ഡൗൺലോഡ്</button>' +
-                '</div></div></div>';
+        const freeCount = merged.filter(function (x) { return x.freeDownload; }).length;
+        const header =
+            '<div class="flex items-center justify-between text-[11px] text-slate-500 px-0.5 pb-1">' +
+            '<span><b class="text-slate-700">' + merged.length + '</b> results · ranked</span>' +
+            '<span class="text-emerald-600 font-bold">' + freeCount + ' free downloadable</span></div>';
+
+        container.innerHTML = header + merged.map(function (item, i) {
+            return renderBookCard(item, i + 1);
         }).join('');
     } catch (err) {
         if (seq !== searchSeq || (err && err.name === 'AbortError')) return;
+        console.error(err);
         container.innerHTML = '<div class="text-center py-8 text-red-500 text-xs">തിരയലിൽ പിശക് സംഭവിച്ചു. ഇന്റർനെറ്റ് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</div>';
     }
 }
